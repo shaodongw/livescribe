@@ -3,6 +3,8 @@
 (require racket/list)
 
 (provide map-append
+         ffirst
+         rrest
          id
          pwd
          cd
@@ -13,10 +15,18 @@
          ensure-string-path
          ensure-object-path
          tilde
-         ~)
+         ~
+         foldl-string-append
+         foldr-string-append)
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
+
+(define (ffirst lst)
+  (first (first lst)))
+
+(define (rrest lst)
+  (rest (rest lst)))
 
 (define (id x) x)
 
@@ -64,3 +74,9 @@
 
 (define (~ . args)
   (apply tilde args))
+
+(define (foldl-string-append lst)
+  (foldl string-append "" lst))
+
+(define (foldr-string-append lst)
+  (foldr string-append "" lst))

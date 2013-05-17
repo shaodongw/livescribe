@@ -50,7 +50,7 @@
                   "\n"
                   (string-replace str "\n " "")))
 
-(define (third-or-empty-string lst)
+(define (tag-value lst)
   (if (= (length lst) 3)
       (string-trim (third lst))
       ""))
@@ -60,26 +60,33 @@
     (cond [(null? value) (list '())]
           [else value])))
 
-(define (entry-metadata data)
-  (map-append third-or-empty-string
-              (list (sxpath-value 'subject data)
-                    (sxpath-value 'taglist data)
-                    (sxpath-value 'logtime data)
-                    (sxpath-value 'eventtime data)
-                    (sxpath-value 'url data)
-                    (sxpath-value 'itemid data)
-                    (sxpath-value 'ditemid data)
-                    (sxpath-value 'event_timestamp data)
-                    (sxpath-value 'reply_count data))))
+(define (collect proc input args)
+  (let loop ([proc proc]
+             [input input]
+             [args args]
+             [acc '()])
+    (cond [(null? args) (reverse acc)]
+          [else (loop proc input (cdr args)
+                      (cons (proc (car args) input) acc))])))
 
-(define (entry-file-metadata file)
-  (let ([data (xml-file->xexp file)])
-    (entry-metadata data)))
+(define (entry-metadata data)
+  (map-append tag-value
+              (collect sxpath-value
+                       data
+                       '(subject
+                         taglist
+                         logtime
+                         eventtime
+                         url
+                         itemid
+                         ditemid
+                         event_timestamp
+                         reply_count))))
 
 (define (entry-body data)
   (list (remove-newlines
          (foldr string-append ""
-                (rest (rest (first ((sxpath '(event)) data))))))))
+                (rrest (first (sxpath-value 'event data)))))))
 
 (define (entry-contents file)
   (let ([data (xml-file->xexp file)])
@@ -91,19 +98,19 @@
 
 (define (comment-metadata data)
   (map (lambda (lst)
-         (map third-or-empty-string lst))
-       (list
-        (sxpath-value 'subject data)
-        (sxpath-value 'date data)
-        (sxpath-value 'id data)
-        (sxpath-value 'parentid data)
-        (sxpath-value 'state data))))
+         (map tag-value lst))
+       (collect sxpath-value
+                data
+                '(subject
+                  date
+                  id
+                  parentid
+                  state))))
 
 (define (comment-body data)
   (map (lambda (lst)
-         (map third-or-empty-string lst))
-       (list
-        (sxpath-value 'body data))))
+         (map tag-value lst))
+       (collect sxpath-value data '(body))))
 
 (define (comment-contents file)
   (let ([data (xml-file->xexp file)])
