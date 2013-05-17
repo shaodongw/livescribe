@@ -17,15 +17,15 @@
    timestamp
    replies
    logtime
-   trunk))
+   body))
 
 (struct lj-comment
   (subject
    date
-   body
    id
    parentid
-   state))
+   state
+   body))
 
 (define (xml->xexp data)
   (xml->xexpr
@@ -37,14 +37,10 @@
     (lambda (in)
       (xml->xexp in))))
 
-(define (remove-newline str)
-  (string-replace str "\n" ""))
-
-(define (remove-newline-space str)
-  (string-replace str "\n " ""))
-
 (define (remove-newlines str)
-  (remove-newline (remove-newline-space str)))
+  (string-replace str
+                  "\n"
+                  (string-replace str "\n " "")))
 
 (define (third-or-empty-string lst)
   (if (= (length lst) 3)
@@ -76,11 +72,9 @@
                   (entry-body data))])
                (list (lj-entry a b c d e f g h i j)))))
 
-(define (map-third-or-empty-string lst)
-  (map third-or-empty-string lst))
-
 (define (comment-metadata data)
-  (map map-third-or-empty-string
+  (map (lambda (lst)
+         (map third-or-empty-string lst))
        (list
         ((sxpath '(// subject)) data)
         ((sxpath '(// date)) data)
@@ -89,7 +83,8 @@
         ((sxpath '(// state)) data))))
 
 (define (comment-body data)
-  (map map-third-or-empty-string
+  (map (lambda (lst)
+         (map third-or-empty-string lst))
        (list
         ((sxpath '(// body)) data))))
 
@@ -126,15 +121,23 @@
                                         state
                                         body)))))))
 
-(define base-path (expand-user-path "~/home/shop/fare-lj/xml"))
+(define (entry-xexp? xexp)
+  (eqv? (car xexp) 'event))
 
-(define (cd-entries)
-  (current-directory (build-path base-path "entries")))
+(define (comment-xexp? xexp)
+  (eqv? (car xexp) 'comments))
 
-(define (cd-comments)
-  (current-directory (build-path base-path "comments")))
+(define (entry-file? file)
+  (entry-xexp? (xml-file->xexp file)))
 
-#|
-- create file/directory dumper; get ideas from htmlxexp.rkt
-- if reply_count is 0, do not process the corresponding comment file
-|#
+(define (comment-file? file)
+  (comment-xexp? (xml-file->xexp file)))
+
+(define (dispatch-file file)
+  (if (file-exists? file)
+      (cond [(entry-file? file)
+             (entry-contents file)]
+            [(comment-file? file)
+             (comment-contents file)]
+            [else (format "Error: The file ~A is of unknown type.~N" file)])
+      '()))
