@@ -7,6 +7,14 @@
 (require xml)
 (require (planet clements/sxml2:1:3))
 
+(require "utils.rkt")
+
+(provide xml->xexp
+         xml-file->xexp
+         entry-file?
+         comment-file?
+         dispatch-file)
+
 (struct lj-entry
   (subject
    taglist
@@ -47,17 +55,26 @@
       (string-trim (third lst))
       ""))
 
+(define (sxpath-value path data)
+  (let ([value ((sxpath `(// ,path)) data)])
+    (cond [(null? value) (list '())]
+          [else value])))
+
 (define (entry-metadata data)
-  (map third-or-empty-string
-       (append ((sxpath '(// subject)) data)
-               ((sxpath '(// taglist)) data)
-               ((sxpath '(// logtime)) data)
-               ((sxpath '(// eventtime)) data)
-               ((sxpath '(// url)) data)
-               ((sxpath '(// itemid)) data)
-               ((sxpath '(// ditemid)) data)
-               ((sxpath '(// event_timestamp)) data)
-               ((sxpath '(// reply_count)) data))))
+  (map-append third-or-empty-string
+              (list (sxpath-value 'subject data)
+                    (sxpath-value 'taglist data)
+                    (sxpath-value 'logtime data)
+                    (sxpath-value 'eventtime data)
+                    (sxpath-value 'url data)
+                    (sxpath-value 'itemid data)
+                    (sxpath-value 'ditemid data)
+                    (sxpath-value 'event_timestamp data)
+                    (sxpath-value 'reply_count data))))
+
+(define (entry-file-metadata file)
+  (let ([data (xml-file->xexp file)])
+    (entry-metadata data)))
 
 (define (entry-body data)
   (list (remove-newlines
@@ -76,17 +93,17 @@
   (map (lambda (lst)
          (map third-or-empty-string lst))
        (list
-        ((sxpath '(// subject)) data)
-        ((sxpath '(// date)) data)
-        ((sxpath '(// id)) data)
-        ((sxpath '(// parentid)) data)
-        ((sxpath '(// state)) data))))
+        (sxpath-value 'subject data)
+        (sxpath-value 'date data)
+        (sxpath-value 'id data)
+        (sxpath-value 'parentid data)
+        (sxpath-value 'state data))))
 
 (define (comment-body data)
   (map (lambda (lst)
          (map third-or-empty-string lst))
        (list
-        ((sxpath '(// body)) data))))
+        (sxpath-value 'body data))))
 
 (define (comment-contents file)
   (let ([data (xml-file->xexp file)])
@@ -104,15 +121,15 @@
                                   parentid
                                   state
                                   body)))
-         (match-let ([(list subject date id parentid state body)
+         (match-let ([(list a b c d e f)
                       (append (comment-metadata data)
                               (comment-body data))])
-                    (for/list ([subject subject]
-                               [date date]
-                               [id id]
-                               [parentid parentid]
-                               [state state]
-                               [body body])
+                    (for/list ([subject a]
+                               [date b]
+                               [id c]
+                               [parentid d]
+                               [state e]
+                               [body f])
                       (append-map list
                                   (list subject
                                         date
@@ -139,5 +156,5 @@
              (entry-contents file)]
             [(comment-file? file)
              (comment-contents file)]
-            [else (format "Error: The file ~A is of unknown type.~N" file)])
+            [else (format "foo!" file)])
       '()))
