@@ -1,19 +1,31 @@
 #lang racket/base
 
+(require racket/contract)
 (require racket/list)
 (require racket/string)
 (require racket/match)
-
 (require xml)
 (require (planet clements/sxml2:1:3))
-
 (require "utils.rkt")
 
-(provide xml->xexp
-         xml-file->xexp
-         entry-file?
-         comment-file?
-         dispatch-file)
+(provide
+ (contract-out
+  [xml->xexp
+   (->* (any/c) ()
+        xexpr/c)]
+  [xml-file->xexp
+   (->* (path?) ()
+        xexpr/c)]
+  [entry-file?
+   (->* ((or/c string? path?)) ()
+        boolean?)]
+  [comment-file?
+   (->* ((or/c string? path?)) ()
+        boolean?)]
+  [dispatch-file
+   (->* ((or/c string? path?)) ()
+        (or/c (listof lj-entry?)
+              (listof lj-comment?)))]))
 
 (struct lj-entry
   (subject
@@ -42,7 +54,7 @@
 
 (define (xml-file->xexp file)
   (call-with-input-file file
-    (lambda (in)
+    (λ (in)
       (xml->xexp in))))
 
 (define (remove-newlines str)
@@ -90,14 +102,31 @@
 
 (define (entry-contents file)
   (let ([data (xml-file->xexp file)])
-    (match-let ([(list a b c d e f g h i j)
-                 (append
-                  (entry-metadata data)
-                  (entry-body data))])
-               (list (lj-entry a b c d e f g h i j)))))
+    (match-let ([(list subject
+                       taglist
+                       logtime
+                       eventtime
+                       url
+                       itemid
+                       ditemid
+                       event_timestamp
+                       reply_count
+                       body)
+                 (append (entry-metadata data)
+                         (entry-body data))])
+      (list (lj-entry subject
+                      taglist
+                      logtime
+                      eventtime
+                      url
+                      itemid
+                      ditemid
+                      event_timestamp
+                      reply_count
+                      body)))))
 
 (define (comment-metadata data)
-  (map (lambda (lst)
+  (map (λ (lst)
          (map tag-value lst))
        (collect sxpath-value
                 data
@@ -108,13 +137,13 @@
                   state))))
 
 (define (comment-body data)
-  (map (lambda (lst)
+  (map (λ (lst)
          (map tag-value lst))
        (collect sxpath-value data '(body))))
 
 (define (comment-contents file)
   (let ([data (xml-file->xexp file)])
-    (map (lambda (x)
+    (map (λ (x)
            (match-let ([(list subject
                               date
                               id
@@ -122,28 +151,28 @@
                               state
                               body)
                         x])
-                      (lj-comment subject
-                                  date
-                                  id
-                                  parentid
-                                  state
-                                  body)))
+             (lj-comment subject
+                         date
+                         id
+                         parentid
+                         state
+                         body)))
          (match-let ([(list a b c d e f)
                       (append (comment-metadata data)
                               (comment-body data))])
-                    (for/list ([subject a]
-                               [date b]
-                               [id c]
-                               [parentid d]
-                               [state e]
-                               [body f])
-                      (append-map list
-                                  (list subject
-                                        date
-                                        id
-                                        parentid
-                                        state
-                                        body)))))))
+           (for/list ([subject a]
+                      [date b]
+                      [id c]
+                      [parentid d]
+                      [state e]
+                      [body f])
+             (append-map list
+                         (list subject
+                               date
+                               id
+                               parentid
+                               state
+                               body)))))))
 
 (define (entry-xexp? xexp)
   (eqv? (car xexp) 'event))

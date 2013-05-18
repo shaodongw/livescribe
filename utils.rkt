@@ -1,23 +1,63 @@
 #lang racket/base
 
+(require racket/contract)
 (require racket/list)
 
-(provide map-append
-         ffirst
-         rrest
-         id
-         pwd
-         cd
-         ls
-         string-first
-         string-reverse
-         string-last
-         ensure-string-path
-         ensure-object-path
-         tilde
-         ~
-         foldl-string-append
-         foldr-string-append)
+(provide
+ (contract-out
+  [map-append
+   (->* (procedure? list/c) ()
+        list/c)]
+  [ffirst
+   (->* (list/c) ()
+        any/c)]
+  [rrest
+   (->* (list/c) ()
+        any/c)]
+  [id
+   (->* (any/c) ()
+        any/c)]
+  [pwd
+   (->* () ()
+        path?)]
+  [cd
+   (->* () (path?)
+        void?)]
+  [ls
+   (->* () ()
+        #:rest (listof (or/c path? string?))
+        (or/c empty? (listof path?)))]
+  [string-first
+   (->* (string?) ()
+        char?)]
+  [string-reverse
+   (->* (string?) ()
+        char?)]
+  [string-last
+   (->* (string?) ()
+        char?)]
+  [ensure-string-path
+   (->* ((or/c path? string)) ()
+        string?)]
+  [ensure-object-path
+   (->* ((or/c path? string)) ()
+        path?)]
+  [tilde-first?
+   (->* (string?) ()
+        char?)]
+  [tilde
+   (->* () ((or/c boolean? path? string?))
+        path?)]
+  [~
+   (->* () ()
+        #:rest (listof (or/c path? string?))
+        path?)]
+  [foldl-string-append
+   (->* ((listof string?)) ()
+        (listof string?))]
+  [foldr-string-append
+   (->* ((listof string?)) ()
+        (listof string?))]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
