@@ -1,7 +1,8 @@
 # TODO
 
+- Write Scribble writer
 - Use tree system for comments
-- Write scribble writer
+- Write Disqus comment writer
 - Use exceptions
 - Create tests
 - Create file/directory dumper; get ideas from htmlxexp.rkt
