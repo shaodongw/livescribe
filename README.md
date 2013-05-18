@@ -22,6 +22,7 @@ racket livescribe/main.rkt file.xml
 
 # Todo
 
+<<<<<<< HEAD
 1. Write Scribble writer.
 2. Use tree system to create proper references to parent comments.
 3. Write Disqus comment writer.
@@ -29,3 +30,12 @@ racket livescribe/main.rkt file.xml
 5. Create tests.
 6. Enable command-line use.
 7. Check if reply_count is 0.
+=======
+1- Write Scribble writer.
+2- Use tree system to create proper references to parent comments.
+3- Write Disqus comment writer.
+4- Use exceptions.
+5- Create tests.
+6- Enable command-line use.
+7- Check if reply_count is 0.
+>>>>>>> b2ac1cded6e81ed5c178ff082e0e9ffb8c1947d1
