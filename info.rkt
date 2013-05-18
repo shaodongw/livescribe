@@ -1,2 +1,3 @@
 #lang setup/infotab
-(define deps '())
+
+(define deps '("sxml"))

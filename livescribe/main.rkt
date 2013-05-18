@@ -1,12 +1,13 @@
 #lang racket/base
 
-(require racket/contract)
-(require racket/list)
-(require racket/string)
-(require racket/match)
-(require xml)
-(require (planet clements/sxml2:1:3))
-(require "utils.rkt")
+(require
+ racket/contract
+ racket/list
+ racket/string
+ racket/match
+ xml
+ sxml
+ "utils.rkt")
 
 (provide
  (contract-out
