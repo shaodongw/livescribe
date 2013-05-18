@@ -6,13 +6,13 @@
 (provide
  (contract-out
   [map-append
-   (->* (procedure? list/c) ()
-        list/c)]
+   (->* (procedure? list?) ()
+        list?)]
   [ffirst
-   (->* (list/c) ()
+   (->* (list?) ()
         any/c)]
   [rrest
-   (->* (list/c) ()
+   (->* (list?) ()
         any/c)]
   [id
    (->* (any/c) ()
@@ -57,7 +57,10 @@
         (listof string?))]
   [foldr-string-append
    (->* ((listof string?)) ()
-        (listof string?))]))
+        (listof string?))]
+  [collect
+   (->* (procedure? any/c list?) ()
+        list?)]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
@@ -120,3 +123,12 @@
 
 (define (foldr-string-append lst)
   (foldr string-append "" lst))
+
+(define (collect proc input args)
+  (let loop ([proc proc]
+             [input input]
+             [args args]
+             [acc '()])
+    (cond [(null? args) (reverse acc)]
+          [else (loop proc input (cdr args)
+                      (cons (proc (car args) input) acc))])))

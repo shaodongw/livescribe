@@ -22,6 +22,9 @@
   [comment-file?
    (->* ((or/c string? path?)) ()
         boolean?)]
+  [entry-contents
+   (->* ((or/c string? path?)) ()
+        any/c)]
   [dispatch-file
    (->* ((or/c string? path?)) ()
         (or/c (listof lj-entry?)
@@ -71,15 +74,6 @@
   (let ([value ((sxpath `(// ,path)) data)])
     (cond [(null? value) (list '())]
           [else value])))
-
-(define (collect proc input args)
-  (let loop ([proc proc]
-             [input input]
-             [args args]
-             [acc '()])
-    (cond [(null? args) (reverse acc)]
-          [else (loop proc input (cdr args)
-                      (cons (proc (car args) input) acc))])))
 
 (define (entry-metadata data)
   (map-append tag-value
