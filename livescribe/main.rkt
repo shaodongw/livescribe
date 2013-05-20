@@ -35,6 +35,8 @@
         any/c)]))
 
 ;;; Global definitions
+(define program-name "livescribe")
+
 (define scribble-suffix ".scrbl")
 
 (define entry-marker 'event)
@@ -277,10 +279,18 @@
         [(directory-exists? arg) (make-scribble-files arg)]
         [else #f]))
 
+(define (display-usage)
+  (let ((self (format "raco ~a" program-name)))
+    (ln (format "Usage: ~a file.xml ..." self))))
+
+(define (display-usage-exit exit-code)
+  (display-usage)
+  (exit exit-code))
+
 (define (main args)
   (cond [(> (length args) 0)
          (for-each dispatch-input args)]
-        [else (error 'main "blah"]))
+        [else (display-usage-exit 1)]))
 
 (module+ main
   (command-line
