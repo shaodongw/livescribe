@@ -219,18 +219,21 @@
       '()))
 
 ;;; String formatters
-(define (fmt cmd datum str #:open [open "{"] #:close [close "}"])
+(define (fmt cmd datum str #:open open #:close close)
   (let ([dat (cond [(not (empty-string? datum))
                       (string-append "[" datum "]")]
                      [else ""])])
     (format (string-append "@" cmd dat open "~a" close)
             str)))
 
-(define (fmt-curly cmd str)
-  (fmt cmd str #:open "{" #:close "}"))
+(define (fmt-curly cmd datum str)
+  (fmt cmd datum str #:open "{" #:close "}"))
 
-(define (fmt-square cmd str)
-  (fmt cmd str #:open "[" #:close "}"))
+(define (fmt-square cmd datum str)
+  (fmt cmd datum str #:open "[" #:close "}"))
+
+(define (fmt-round cmd datum str)
+  (fmt cmd datum str #:open "(" #:close ")"))
 
 ;;; TODO: File writers
 (define (xml-file->scribble file) '())
