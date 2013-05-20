@@ -5,6 +5,7 @@
  racket/list
  racket/string
  racket/match
+ racket/cmdline
  xml
  sxml
  "utils.rkt")
@@ -26,10 +27,31 @@
   [entry-contents
    (->* ((or/c string? path?)) ()
         any/c)]
-  [dispatch-file
+  [read-file
    (->* ((or/c string? path?)) ()
         (or/c (listof lj-entry?)
               (listof lj-comment?)))]))
+
+;; This is lame.
+(define entry-fields
+  '(subject
+    taglist
+    eventtime
+    url
+    itemid
+    ditemid
+    timestamp
+    replies
+    logtime
+    body))
+
+(define comment-fields
+  '(subject
+    date
+    id
+    parentid
+    state
+    body))
 
 (struct lj-entry
   (subject
@@ -66,6 +88,14 @@
                   "\n"
                   (string-replace str "\n " "")))
 
+(define (xml-suffix? str)
+  (if (regexp-match "[xX][mM][lL]" (suffix str))
+      #t
+      #f))
+
+(define (suffix->scrbl path)
+  (path-replace-suffix path ".scrbl"))
+
 (define (tag-value lst)
   (if (= (length lst) 3)
       (string-trim (third lst))
@@ -93,7 +123,7 @@
 (define (entry-body data)
   (list (remove-newlines
          (foldr string-append ""
-                (rrest (first (sxpath-value 'event data)))))))
+              (rrest (first (sxpath-value 'event data)))))))
 
 (define (entry-contents file)
   (let ([data (xml-file->xexp file)])
@@ -181,7 +211,7 @@
 (define (comment-file? file)
   (comment-xexp? (xml-file->xexp file)))
 
-(define (dispatch-file file)
+(define (read-file file)
   (if (file-exists? file)
       (cond [(entry-file? file)
              (entry-contents file)]
@@ -189,3 +219,38 @@
              (comment-contents file)]
             [else (format "foo!" file)])
       '()))
+
+;; Write these
+(define (xml-file->scribble file) '())
+
+(define (write-scribble-file file)
+  (write (xml-file->scribble file)))
+
+(define (make-scribble-file path)
+  (let ([file (ensure-object-path path)])
+    (when (and (path-exists? file)
+               (xml-suffix? (path->string file)))
+      (with-output-to-file (suffix->scrbl file)
+        #:exists 'truncate/replace
+        (λ ()
+          (write-scribble-file file))))))
+
+(define (make-scribble-files path)
+  (when (directory-exists? path)
+    (for-each make-scribble-file
+              (directory-list path))))
+
+(define (dispatch-file arg)
+  (cond [(file-exists? arg) (make-scribble-file arg)]
+        [(directory-exists? arg) (make-scribble-files arg)]
+        [else #f]))
+
+(define (main args)
+  (cond [(> (length args) 0)
+         (for-each dispatch-file args)]
+        [else (dispatch-file (current-directory))]))
+
+(module+ main
+  (command-line
+   #:args args
+   (main args)))

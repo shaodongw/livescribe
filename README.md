@@ -29,3 +29,4 @@ racket livescribe/main.rkt file.xml
 5. Create tests.
 6. Enable command-line use.
 7. Check if reply_count is 0.
+8. Create planet2 package

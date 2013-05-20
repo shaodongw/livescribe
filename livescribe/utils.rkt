@@ -60,7 +60,19 @@
         (listof string?))]
   [collect
    (->* (procedure? any/c list?) ()
-        list?)]))
+        list?)]
+  [find-char
+   (->* (char? string?) ()
+        natural-number/c)]
+  [string-member
+   (->* (natural-number/c string?)  ()
+        list?)]
+  [suffix
+   (->* (string?) ()
+        string?)]
+  [path-exists?
+   (->* ((or/c string? path?)) ()
+        boolean?)]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
@@ -132,3 +144,26 @@
     (cond [(null? args) (reverse acc)]
           [else (loop proc input (cdr args)
                       (cons (proc (car args) input) acc))])))
+
+(define (find-char chr str)
+  (let loop ([c chr]
+             [lst (string->list str)]
+             [cnt 0])
+    (cond
+     [(null? lst) #f]
+     [(equal? chr (first lst)) cnt]
+     [else (loop c (rest lst) (+ cnt 1))])))
+
+(define (string-member elt str)
+  (member elt (string->list str)))
+
+(define (suffix str)
+  (if (string-member #\. str)
+      (substring str (+ (find-char #\. str) 1) (string-length str))
+      ""))
+
+(define (path-exists? path)
+  (let ([p (ensure-object-path path)])
+    (or (file-exists? p)
+        (directory-exists? p)
+        (directory-exists? p))))
