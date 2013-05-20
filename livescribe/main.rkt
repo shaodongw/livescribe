@@ -27,10 +27,11 @@
   [entry-file-contents
    (->* ((or/c string? path?)) ()
         any/c)]
-  [read-file
-   (->* ((or/c string? path?)) ()
-        (or/c (listof lj-entry?)
-              (listof lj-comment?)))]))
+  ;; [read-file
+  ;;  (->* ((or/c string? path?)) ()
+  ;;       (or/c (listof lj-entry?)
+  ;;             (listof lj-comment?)))]
+  ))
 
 
 ;;; Global definitions
@@ -140,13 +141,9 @@
   (append (entry-metadata data)
           (entry-body data)))
 
-(define (entry-file-contents-raw file)
-  (let ([data (xml-file->xexp file)])
-    (entry-data-contents data)))
-
 (define (entry-file-contents file)
   (let ([data (xml-file->xexp file)])
-    (list (apply lj-entry (entry-data-contents data)))))
+    (entry-data-contents data)))
 
 ;;; Comments
 (define (comment-metadata data)
@@ -164,15 +161,9 @@
    (append (comment-metadata data)
            (comment-body data))))
 
-(define (comment-file-contents-raw file)
-  (let ([data (xml-file->xexp file)])
-    (comment-data-contents data)))
-
 (define (comment-file-contents file)
   (let ([data (xml-file->xexp file)])
-    (map (λ (x)
-           (apply lj-comment x))
-         (comment-data-contents data))))
+    (comment-data-contents data)))
 
 ;;; Predicates
 (define (entry-xexp? xexp)
@@ -218,7 +209,7 @@
       '()))
 
 (define (entry-file->scribble file)
-  (let ([item (entry-file-contents-raw file)])
+  (let ([item (entry-file-contents file)])
     (match-let
      ([(list item-id
              event-time
@@ -247,7 +238,7 @@
      (ln-fmt-curly "para" tag-list))))
 
 (define (comment-file->scribble file)
-  (for ([item (comment-file-contents-raw file)])
+  (for ([item (comment-file-contents file)])
     (match-let
      ([(list id
              parent-id
