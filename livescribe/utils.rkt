@@ -37,10 +37,10 @@
    (->* (string?) ()
         char?)]
   [ensure-string-path
-   (->* ((or/c path? string)) ()
+   (->* ((or/c path? string?)) ()
         string?)]
   [ensure-object-path
-   (->* ((or/c path? string)) ()
+   (->* ((or/c path? string?)) ()
         path?)]
   [tilde-first?
    (->* (string?) ()
@@ -87,7 +87,10 @@
         boolean?)]
   [make-procs
    (->* (symbol? (listof string?)) ()
-        (listof procedure?))]))
+        (listof procedure?))]
+  [symbols->strings
+   (->* ((listof symbol?)) ()
+        (listof string?))]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
@@ -209,3 +212,6 @@
           (read (open-input-string
                  (string-append (symbol->string base) x)))))
        lst))
+
+(define (symbols->strings lst)
+  (map symbol->string lst))

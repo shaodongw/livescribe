@@ -75,8 +75,6 @@
   '(subject
     body))
 
-(define dl displayln)
-
 (define entry-content-fields
   '(item-id
     event-time
@@ -98,8 +96,7 @@
     a-num
     subject
     body
-    tag-list
-    ))
+    tag-list))
 
 (define comment-content-fields
   '(id
@@ -107,8 +104,9 @@
     state
     date
     subject
-    body
-    ))
+    body))
+
+(define ln displayln)
 
 ;;; Structures
 (struct lj-entry                        ;XML tags
@@ -143,12 +141,6 @@
    subject                              ;subject
    body                                 ;body
    ))
-
-;; (define entry-procs
-;;   (make-procs 'lj-entry- (map symbol->string entry-content-fields)))
-
-;; (define comment-procs
-;;   (make-procs 'lj-comment- (map symbol->string comment-content-fields)))
 
 ;;; Essentials
 (define (xml->xexp data)
@@ -303,34 +295,34 @@
              subject
              body
              tag-list)
-       (map (λ (proc)
-              (proc item))
-            (make-procs 'lj-entry- (map symbol->string entry-content-fields)))
-       ;; (list (lj-entry-item-id item)
-       ;;       (lj-entry-event-time item)
-       ;;       (lj-entry-url item)
-       ;;       (lj-entry-d-item-id item)
-       ;;       (lj-entry-event-timestmap item)
-       ;;       (lj-entry-reply-count item)
-       ;;       (lj-entry-log-time item)
-       ;;       (lj-entry-opt-preformatted item)
-       ;;       (lj-entry-personifi-tags item)
-       ;;       (lj-entry-has_screened item)
-       ;;       (lj-entry-comment-alter item)
-       ;;       (lj-entry-rev-time item)
-       ;;       (lj-entry-opt-backdated item)
-       ;;       (lj-entry-current-mood-id item)
-       ;;       (lj-entry-current-music item)
-       ;;       (lj-entry-rev-num item)
-       ;;       (lj-entry-can-comment item)
-       ;;       (lj-entry-a-num item)
-       ;;       (lj-entry-subject item)
-       ;;       (lj-entry-body item)
-       ;;       (lj-entry-tag-list item))
+       (list (lj-entry-item-id item)
+             (lj-entry-event-time item)
+             (lj-entry-url item)
+             (lj-entry-d-item-id item)
+             (lj-entry-event-timestmap item)
+             (lj-entry-reply-count item)
+             (lj-entry-log-time item)
+             (lj-entry-opt-preformatted item)
+             (lj-entry-personifi-tags item)
+             (lj-entry-has_screened item)
+             (lj-entry-comment-alter item)
+             (lj-entry-rev-time item)
+             (lj-entry-opt-backdated item)
+             (lj-entry-current-mood-id item)
+             (lj-entry-current-music item)
+             (lj-entry-rev-num item)
+             (lj-entry-can-comment item)
+             (lj-entry-a-num item)
+             (lj-entry-subject item)
+             (lj-entry-body item)
+             (lj-entry-tag-list item))
+       ;; (map (λ (proc)
+       ;;        (proc item))
+       ;;      (make-procs 'lj-entry- (symbols->strings entry-content-fields)))
        ])
-     (dl (fmt-curly "title" subject))
-     (dl (fmt-curly "para" body))
-     (dl (fmt-curly "para" tag-list)))))
+     (ln (fmt-curly "title" subject))
+     (ln (fmt-curly "para" body))
+     (ln (fmt-curly "para" tag-list)))))
 
 (define (comment-file->scribble file)
   (for ([item (comment-file-contents file)])
@@ -346,10 +338,14 @@
              (lj-comment-state item)
              (lj-comment-date item)
              (lj-comment-subject item)
-             (lj-comment-body item))])
-     (dl (fmt-curly "title" subject))
-     (dl (fmt-curly "para" date))
-     (dl (fmt-curly "para" body)))))
+             (lj-comment-body item))
+       ;; (map (λ (proc)
+       ;;        (proc item))
+       ;;      (make-procs 'lj-comment- (symbols->strings comment-content-fields)))
+       ])
+     (ln (fmt-curly "title" subject))
+     (ln (fmt-curly "para" date))
+     (ln (fmt-curly "para" body)))))
 
 (define (xml-file->scribble file)
   (cond [(entry-file? file)
@@ -362,8 +358,7 @@
 
 (define (make-scribble-file path)
   (let ([file (ensure-object-path path)])
-    (when (and (path-exists? file)
-               (xml-suffix? (path->string file)))
+    (when (path-exists? file)
       (with-output-to-file (suffix->scrbl file)
         #:exists 'truncate/replace
         (λ ()
@@ -376,6 +371,7 @@
 
 ;;; Top-level
 (define (dispatch-input arg)
+  (ln arg)
   (cond [(file-exists? arg) (make-scribble-file arg)]
         [(directory-exists? arg) (make-scribble-files arg)]
         [else #f]))
