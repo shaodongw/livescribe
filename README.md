@@ -22,11 +22,9 @@ racket livescribe/main.rkt file.xml
 
 # Todo
 
-0. Write Scribble writer.
+0. Improve Scribble writer.
 0. Use tree system to create proper references to parent comments.
 0. Write Disqus comment writer.
-0. Use exceptions.
 0. Create tests.
-0. Enable command-line use.
 0. Check if reply_count is 0.
 0. Create planet2 package
