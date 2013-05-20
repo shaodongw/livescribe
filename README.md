@@ -1,8 +1,8 @@
 # Introduction
 
-**Livescribe** is a program, written in
-[Racket](http://racket-lang.org) to convert the XML files created by
-the programs [ljdump](https://github.com/ghewgill/ljdump), or
+**Livescribe** is a [Racket](http://racket-lang.org) program, used to
+convert the XML files created by
+[ljdump](https://github.com/ghewgill/ljdump), or
 [ljmigrate](https://github.com/ceejbot/ljmigrate), to
 [Scribble](http://docs.racket-lang.org/scribble/). The input files are
 categorized into either "entry", or "comment" data, the former
