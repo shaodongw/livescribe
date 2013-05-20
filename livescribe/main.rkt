@@ -27,12 +27,12 @@
   [entry-file-contents
    (->* ((or/c string? path?)) ()
         any/c)]
-  ;; [read-file
-  ;;  (->* ((or/c string? path?)) ()
-  ;;       (or/c (listof lj-entry?)
-  ;;             (listof lj-comment?)))]
-  ))
-
+  [comment-file-contents
+   (->* ((or/c string? path?)) ()
+        any/c)]
+  [xml-file->scribble
+   (->* ((and/c (or/c string? path?) file-exists?)) ()
+        any/c)]))
 
 ;;; Global definitions
 (define scribble-suffix ".scrbl")
@@ -198,16 +198,7 @@
 (define (fmt-round cmd str)
   (fmt cmd str #:open "(" #:close ")"))
 
-;;; File readers and writers
-(define (read-file file)
-  (if (file-exists? file)
-      (cond [(entry-file? file)
-             (entry-file-contents file)]
-            [(comment-file? file)
-             (comment-file-contents file)]
-            [else (error 'read-file "blah")])
-      '()))
-
+;;; File writers
 (define (entry-file->scribble file)
   (let ([item (entry-file-contents file)])
     (match-let
