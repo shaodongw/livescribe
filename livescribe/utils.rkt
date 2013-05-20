@@ -81,7 +81,10 @@
         string?)]
   [collect-cars
    (->* ((listof list?)) ()
-       (listof list?))]))
+       (listof list?))]
+  [empty-string?
+   (->* (string?) ()
+        boolean?)]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
@@ -192,3 +195,7 @@
           [else (proc (map cdr lst)
                       (cons (map car lst)
                             acc))])))
+
+(define (empty-string? str)
+  (cond [(zero? (string-length str)) #t]
+        [else #f]))
