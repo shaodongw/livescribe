@@ -289,5 +289,3 @@
   (command-line
    #:args args
    (main args)))
-
-;;; Disable use of structures?
