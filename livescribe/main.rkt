@@ -273,7 +273,6 @@
 
 ;;; Top-level calls
 (define (dispatch-input arg)
-  (ln arg)
   (cond [(file-exists? arg) (make-scribble-file arg)]
         [(directory-exists? arg) (make-scribble-files arg)]
         [else #f]))
@@ -281,7 +280,7 @@
 (define (main args)
   (cond [(> (length args) 0)
          (for-each dispatch-input args)]
-        [else (dispatch-input (current-directory))]))
+        [else (error 'main "blah"]))
 
 (module+ main
   (command-line
