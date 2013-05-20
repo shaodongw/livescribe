@@ -235,6 +235,7 @@
      (ln-fmt-curly "para" tag-list))))
 
 (define (comment-file->scribble file)
+  (ln-fmt-curly "title" "Comments")
   (for ([item (comment-file-contents file)])
     (match-let
      ([(list id
@@ -244,7 +245,7 @@
              subject
              body)
        item])
-     (ln-fmt-curly "title" subject)
+     (ln-fmt-curly "section" subject)
      (ln-fmt-curly "para" date)
      (ln-fmt-curly "para" body))))
 
