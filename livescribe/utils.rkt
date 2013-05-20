@@ -84,7 +84,10 @@
        (listof list?))]
   [empty-string?
    (->* (string?) ()
-        boolean?)]))
+        boolean?)]
+  [make-procs
+   (->* (symbol? (listof string?)) ()
+        (listof procedure?))]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
@@ -199,3 +202,10 @@
 (define (empty-string? str)
   (cond [(zero? (string-length str)) #t]
         [else #f]))
+
+(define (make-procs base lst)
+  (map (λ (x)
+         (eval
+          (read (open-input-string
+                 (string-append (symbol->string base) x)))))
+       lst))

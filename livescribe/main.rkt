@@ -5,6 +5,7 @@
  racket/list
  racket/string
  racket/cmdline
+ racket/match
  xml
  sxml
  "utils.rkt")
@@ -23,7 +24,7 @@
   [comment-file?
    (->* ((or/c string? path?)) ()
         boolean?)]
-  [entry-contents
+  [entry-file-contents
    (->* ((or/c string? path?)) ()
         any/c)]
   [read-file
@@ -32,7 +33,9 @@
               (listof lj-comment?)))]))
 
 
-;;; Global definitions
+;;; Top-level definitions
+(define scribble-suffix ".scrbl")
+
 (define entry-marker 'event)
 
 (define comment-marker 'comments)
@@ -72,6 +75,41 @@
   '(subject
     body))
 
+(define dl displayln)
+
+(define entry-content-fields
+  '(item-id
+    event-time
+    url
+    d-item-id
+    event-timestmap
+    reply-count
+    log-time
+    opt-preformatted
+    personifi-tags
+    has_screened
+    comment-alter
+    rev-time
+    opt-backdated
+    current-mood-id
+    current-music
+    rev-num
+    can-comment
+    a-num
+    subject
+    body
+    tag-list
+    ))
+
+(define comment-content-fields
+  '(id
+    parent-id
+    state
+    date
+    subject
+    body
+    ))
+
 ;;; Structures
 (struct lj-entry                        ;XML tags
   (item-id                              ;itemid
@@ -106,6 +144,12 @@
    body                                 ;body
    ))
 
+;; (define entry-procs
+;;   (make-procs 'lj-entry- (map symbol->string entry-content-fields)))
+
+;; (define comment-procs
+;;   (make-procs 'lj-comment- (map symbol->string comment-content-fields)))
+
 ;;; Essentials
 (define (xml->xexp data)
   (xml->xexpr
@@ -129,7 +173,7 @@
       #f))
 
 (define (suffix->scrbl path)
-  (path-replace-suffix path ".scrbl"))
+  (path-replace-suffix path scribble-suffix))
 
 (define (tag-value lst)
   (if (= (length lst) 3)
@@ -165,13 +209,13 @@
                    (merge-tag-values data (list tag))]))
               entry-content-fields-xml))
 
-(define (entry-contents-raw data)
+(define (entry-data-contents data)
   (append (entry-metadata data)
           (entry-body data)))
 
-(define (entry-contents file)
+(define (entry-file-contents file)
   (let ([data (xml-file->xexp file)])
-    (list (apply lj-entry (entry-contents-raw data)))))
+    (list (apply lj-entry (entry-data-contents data)))))
 
 ;;; Comments
 (define (comment-metadata data)
@@ -184,16 +228,16 @@
                              comment-content-fields-xml)])
     (map tag-value items)))
 
-(define (comment-contents-raw data)
+(define (comment-data-contents data)
   (collect-cars
    (append (comment-metadata data)
            (comment-body data))))
 
-(define (comment-contents file)
+(define (comment-file-contents file)
   (let ([data (xml-file->xexp file)])
     (map (λ (x)
            (apply lj-comment x))
-         (comment-contents-raw data))))
+         (comment-data-contents data))))
 
 ;;; Predicates
 (define (entry-xexp? xexp)
@@ -208,35 +252,110 @@
 (define (comment-file? file)
   (comment-xexp? (xml-file->xexp file)))
 
-;;; Readers
-(define (read-file file)
-  (if (file-exists? file)
-      (cond [(entry-file? file)
-             (entry-contents file)]
-            [(comment-file? file)
-             (comment-contents file)]
-            [else (error 'read-file "blah")])
-      '()))
-
 ;;; String formatters
-(define (fmt cmd datum str #:open open #:close close)
+(define (fmt cmd str #:open open #:close close #:datum [datum ""])
   (let ([dat (cond [(not (empty-string? datum))
                       (string-append "[" datum "]")]
                      [else ""])])
     (format (string-append "@" cmd dat open "~a" close)
             str)))
 
-(define (fmt-curly cmd datum str)
-  (fmt cmd datum str #:open "{" #:close "}"))
+(define (fmt-curly cmd str)
+  (fmt cmd str #:open "{" #:close "}"))
 
-(define (fmt-square cmd datum str)
-  (fmt cmd datum str #:open "[" #:close "}"))
+(define (fmt-square cmd str)
+  (fmt cmd str #:open "[" #:close "}"))
 
-(define (fmt-round cmd datum str)
-  (fmt cmd datum str #:open "(" #:close ")"))
+(define (fmt-round cmd str)
+  (fmt cmd str #:open "(" #:close ")"))
 
-;;; TODO: File writers
-(define (xml-file->scribble file) '())
+;;; TODO: File stuff
+(define (read-file file)
+  (if (file-exists? file)
+      (cond [(entry-file? file)
+             (entry-file-contents file)]
+            [(comment-file? file)
+             (comment-file-contents file)]
+            [else (error 'read-file "blah")])
+      '()))
+
+(define (entry-file->scribble file)
+  (for ([item (entry-file-contents file)])
+    (match-let
+     ([(list item-id
+             event-time
+             url
+             d-item-id
+             event-timestmap
+             reply-count
+             log-time
+             opt-preformatted
+             personifi-tags
+             has_screened
+             comment-alter
+             rev-time
+             opt-backdated
+             current-mood-id
+             current-music
+             rev-num
+             can-comment
+             a-num
+             subject
+             body
+             tag-list)
+       (map (λ (proc)
+              (proc item))
+            (make-procs 'lj-entry- (map symbol->string entry-content-fields)))
+       ;; (list (lj-entry-item-id item)
+       ;;       (lj-entry-event-time item)
+       ;;       (lj-entry-url item)
+       ;;       (lj-entry-d-item-id item)
+       ;;       (lj-entry-event-timestmap item)
+       ;;       (lj-entry-reply-count item)
+       ;;       (lj-entry-log-time item)
+       ;;       (lj-entry-opt-preformatted item)
+       ;;       (lj-entry-personifi-tags item)
+       ;;       (lj-entry-has_screened item)
+       ;;       (lj-entry-comment-alter item)
+       ;;       (lj-entry-rev-time item)
+       ;;       (lj-entry-opt-backdated item)
+       ;;       (lj-entry-current-mood-id item)
+       ;;       (lj-entry-current-music item)
+       ;;       (lj-entry-rev-num item)
+       ;;       (lj-entry-can-comment item)
+       ;;       (lj-entry-a-num item)
+       ;;       (lj-entry-subject item)
+       ;;       (lj-entry-body item)
+       ;;       (lj-entry-tag-list item))
+       ])
+     (dl (fmt-curly "title" subject))
+     (dl (fmt-curly "para" body))
+     (dl (fmt-curly "para" tag-list)))))
+
+(define (comment-file->scribble file)
+  (for ([item (comment-file-contents file)])
+    (match-let
+     ([(list id
+             parent-id
+             state
+             date
+             subject
+             body)
+       (list (lj-comment-id item)
+             (lj-comment-parent-id item)
+             (lj-comment-state item)
+             (lj-comment-date item)
+             (lj-comment-subject item)
+             (lj-comment-body item))])
+     (dl (fmt-curly "title" subject))
+     (dl (fmt-curly "para" date))
+     (dl (fmt-curly "para" body)))))
+
+(define (xml-file->scribble file)
+  (cond [(entry-file? file)
+         (entry-file->scribble file)]
+        [(comment-file? file)
+         (comment-file->scribble file)]))
 
 (define (write-scribble-file file)
   (write (xml-file->scribble file)))
@@ -256,15 +375,15 @@
               (directory-list path))))
 
 ;;; Top-level
-(define (dispatch-file arg)
+(define (dispatch-input arg)
   (cond [(file-exists? arg) (make-scribble-file arg)]
         [(directory-exists? arg) (make-scribble-files arg)]
         [else #f]))
 
 (define (main args)
   (cond [(> (length args) 0)
-         (for-each dispatch-file args)]
-        [else (dispatch-file (current-directory))]))
+         (for-each dispatch-input args)]
+        [else (dispatch-input (current-directory))]))
 
 (module+ main
   (command-line
