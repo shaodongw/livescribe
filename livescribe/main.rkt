@@ -4,7 +4,6 @@
  racket/contract
  racket/list
  racket/string
- racket/match
  racket/cmdline
  xml
  sxml
@@ -32,6 +31,8 @@
         (or/c (listof lj-entry?)
               (listof lj-comment?)))]))
 
+
+;;; Global definitions
 (define entry-marker 'event)
 
 (define comment-marker 'comments)
@@ -71,7 +72,8 @@
   '(subject
     body))
 
-(struct lj-entry
+;;; Structures
+(struct lj-entry                        ;XML tags
   (item-id                              ;itemid
    event-time                           ;eventtime
    url                                  ;url
@@ -104,6 +106,7 @@
    body                                 ;body
    ))
 
+;;; Essentials
 (define (xml->xexp data)
   (xml->xexpr
    (document-element
@@ -114,6 +117,7 @@
     (λ (in)
       (xml->xexp in))))
 
+;;; Helpers
 (define (remove-newlines str)
   (string-replace str
                   "\n"
@@ -148,6 +152,7 @@
                  (rrest (first (sxpath-value tag data))))))
        tags))
 
+;;; Entries
 (define (entry-metadata data)
   (collect-tag-values data entry-metadata-fields-xml))
 
@@ -166,51 +171,9 @@
 
 (define (entry-contents file)
   (let ([data (xml-file->xexp file)])
-    (match-let
-     ([(list item-id
-             event-time
-             url
-             d-item-id
-             event-timestmap
-             reply-count
-             log-time
-             opt-preformatted
-             personifi-tags
-             has_screened
-             comment-alter
-             rev-time
-             opt-backdated
-             current-mood-id
-             current-music
-             rev-num
-             can-comment
-             a-num
-             subject
-             body
-             tag-list)
-       (entry-contents-raw data)])
-     (list (lj-entry item-id
-                     event-time
-                     url
-                     d-item-id
-                     event-timestmap
-                     reply-count
-                     log-time
-                     opt-preformatted
-                     personifi-tags
-                     has_screened
-                     comment-alter
-                     rev-time
-                     opt-backdated
-                     current-mood-id
-                     current-music
-                     rev-num
-                     can-comment
-                     a-num
-                     subject
-                     body
-                     tag-list)))))
+    (list (apply lj-entry (entry-contents-raw data)))))
 
+;;; Comments
 (define (comment-metadata data)
   (for/list ([items (collect sxpath-value data
                              comment-metadata-fields-xml)])
@@ -222,41 +185,17 @@
     (map tag-value items)))
 
 (define (comment-contents-raw data)
-  (append (comment-metadata data)
-          (comment-body data)))
+  (collect-cars
+   (append (comment-metadata data)
+           (comment-body data))))
 
 (define (comment-contents file)
   (let ([data (xml-file->xexp file)])
-    (map (λ (fields)
-           (match-let ([(list id
-                              parentid
-                              state
-                              date
-                              subject
-                              body)
-                        fields])
-                      (lj-comment id
-                                  parentid
-                                  state
-                                  date
-                                  subject
-                                  body)))
-         (match-let ([(list a b c d e f)
-                      (comment-contents-raw data)])
-           (for/list ([id a]
-                      [parentid b]
-                      [state c]
-                      [date d]
-                      [subject e]
-                      [body f])
-             (append-map list
-                         (list id
-                               parentid
-                               state
-                               date
-                               subject
-                               body)))))))
+    (map (λ (x)
+           (apply lj-comment x))
+         (comment-contents-raw data))))
 
+;;; Predicates
 (define (entry-xexp? xexp)
   (eqv? (car xexp) entry-marker))
 
@@ -269,6 +208,7 @@
 (define (comment-file? file)
   (comment-xexp? (xml-file->xexp file)))
 
+;;; Readers
 (define (read-file file)
   (if (file-exists? file)
       (cond [(entry-file? file)
@@ -278,7 +218,18 @@
             [else (error 'read-file "blah")])
       '()))
 
-;; Write these
+;;; String formatters
+(define (fmt cmd str #:open open #:close close)
+  (format (string-append "@" cmd open "~a" close)
+          str))
+
+(define (fmt-curly cmd str)
+  (fmt cmd str #:open "{" #:close "}"))
+
+(define (fmt-square cmd str)
+  (fmt cmd str #:open "[" #:close "}"))
+
+;;; File writers
 (define (xml-file->scribble file) '())
 
 (define (write-scribble-file file)
@@ -298,6 +249,7 @@
     (for-each make-scribble-file
               (directory-list path))))
 
+;;; Top-level
 (define (dispatch-file arg)
   (cond [(file-exists? arg) (make-scribble-file arg)]
         [(directory-exists? arg) (make-scribble-files arg)]

@@ -72,7 +72,16 @@
         string?)]
   [path-exists?
    (->* ((or/c string? path?)) ()
-        boolean?)]))
+        boolean?)]
+  [char->string
+   (->* (char?) ()
+        string?)]
+  [ensure-string
+   (->* ((or/c string? number? char?)) ()
+        string?)]
+  [collect-cars
+   (->* ((listof list?)) ()
+       (listof list?))]))
 
 (define (map-append proc lst)
   (map proc (apply append lst)))
@@ -167,3 +176,19 @@
     (or (file-exists? p)
         (directory-exists? p)
         (directory-exists? p))))
+
+(define (char->string char)
+  (make-string 1 char))
+
+(define (ensure-string arg)
+  (cond [(string? arg) arg]
+        [(char? arg) (char->string arg)]
+        [(number? arg) (number->string arg)]))
+
+(define (collect-cars lst)
+  (let proc ([lst lst]
+             [acc '()])
+    (cond [(andmap null? lst) (reverse acc)]
+          [else (proc (map cdr lst)
+                      (cons (map car lst)
+                            acc))])))
