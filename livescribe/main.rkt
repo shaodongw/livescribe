@@ -189,14 +189,20 @@
 (define (fmt-curly cmd str)
   (fmt cmd str #:open "{" #:close "}"))
 
-(define (ln-fmt-curly . rst)
-  (ln (apply fmt-curly rst)))
-
 (define (fmt-square cmd str)
   (fmt cmd str #:open "[" #:close "}"))
 
 (define (fmt-round cmd str)
   (fmt cmd str #:open "(" #:close ")"))
+
+(define (ln-fmt-curly . rst)
+  (ln (apply fmt-curly rst)))
+
+(define (ln-fmt-square . rst)
+  (ln (apply fmt-square rst)))
+
+(define (ln-fmt-round . rst)
+  (ln (apply fmt-round rst)))
 
 ;;; File writers
 (define (entry-file->scribble file)
