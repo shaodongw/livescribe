@@ -32,6 +32,9 @@
         any/c)]
   [xml-file->scribble
    (->* ((and/c (or/c string? path?) file-exists?)) ()
+        any/c)]
+  [dispatch-input
+   (->* ((or/c file-exists? directory-exists?)) ()
         any/c)]))
 
 ;;; Global definitions
@@ -207,8 +210,12 @@
   (ln (apply fmt-round rst)))
 
 ;;; File writers
+(define (display-scribble-header)
+  (ln "#lang scribble/base"))
+
 (define (entry-file->scribble file)
   (let ([item (entry-file-contents file)])
+    (display-scribble-header)
     (match-let
      ([(list item-id
              event-time
@@ -237,6 +244,7 @@
      (ln-fmt-curly "para" tag-list))))
 
 (define (comment-file->scribble file)
+  (display-scribble-header)
   (ln-fmt-curly "title" "Comments")
   (for ([item (comment-file-contents file)])
     (match-let
@@ -279,20 +287,11 @@
         [(directory-exists? arg) (make-scribble-files arg)]
         [else #f]))
 
-(define (display-usage)
-  (let ((self (format "raco ~a" program-name)))
-    (ln (format "Usage: ~a file.xml ..." self))))
-
-(define (display-usage-exit exit-code)
-  (display-usage)
-  (exit exit-code))
-
 (define (main args)
-  (cond [(> (length args) 0)
-         (for-each dispatch-input args)]
-        [else (display-usage-exit 1)]))
+  (for-each dispatch-input args))
 
 (module+ main
   (command-line
-   #:args args
-   (main args)))
+   #:program program-name
+   #:args files
+   (main files)))

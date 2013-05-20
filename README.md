@@ -42,6 +42,7 @@ directory where `file.xml` is found.
 # Todo
 
 0. Improve Scribble writer.
+0. Enable HTML inlining.
 0. Use tree system to create proper references to parent comments.
 0. Write Disqus comment writer.
 0. Create tests.
