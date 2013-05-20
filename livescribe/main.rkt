@@ -33,7 +33,7 @@
               (listof lj-comment?)))]))
 
 
-;;; Top-level definitions
+;;; Global definitions
 (define scribble-suffix ".scrbl")
 
 (define entry-marker 'event)
@@ -75,72 +75,7 @@
   '(subject
     body))
 
-(define entry-content-fields
-  '(item-id
-    event-time
-    url
-    d-item-id
-    event-timestmap
-    reply-count
-    log-time
-    opt-preformatted
-    personifi-tags
-    has_screened
-    comment-alter
-    rev-time
-    opt-backdated
-    current-mood-id
-    current-music
-    rev-num
-    can-comment
-    a-num
-    subject
-    body
-    tag-list))
-
-(define comment-content-fields
-  '(id
-    parent-id
-    state
-    date
-    subject
-    body))
-
 (define ln displayln)
-
-;;; Structures
-(struct lj-entry                        ;XML tags
-  (item-id                              ;itemid
-   event-time                           ;eventtime
-   url                                  ;url
-   d-item-id                            ;ditemid
-   event-timestmap                      ;event_timestamp
-   reply-count                          ;reply_count
-   log-time                             ;logtime
-   opt-preformatted                     ;opt_preformatted
-   personifi-tags                       ;personifi_tags
-   has_screened                         ;hasscreened
-   comment-alter                        ;commentalter
-   rev-time                             ;revtime
-   opt-backdated                        ;opt_backdated
-   current-mood-id                      ;current_moodid
-   current-music                        ;current_music
-   rev-num                              ;revnum
-   can-comment                          ;can_comment
-   a-num                                ;anum
-   subject                              ;subject
-   body                                 ;event
-   tag-list                             ;taglist
-   ))
-
-(struct lj-comment
-  (id                                   ;id
-   parent-id                            ;parentid
-   state                                ;state
-   date                                 ;date
-   subject                              ;subject
-   body                                 ;body
-   ))
 
 ;;; Essentials
 (define (xml->xexp data)
@@ -205,6 +140,10 @@
   (append (entry-metadata data)
           (entry-body data)))
 
+(define (entry-file-contents-raw file)
+  (let ([data (xml-file->xexp file)])
+    (entry-data-contents data)))
+
 (define (entry-file-contents file)
   (let ([data (xml-file->xexp file)])
     (list (apply lj-entry (entry-data-contents data)))))
@@ -224,6 +163,10 @@
   (collect-cars
    (append (comment-metadata data)
            (comment-body data))))
+
+(define (comment-file-contents-raw file)
+  (let ([data (xml-file->xexp file)])
+    (comment-data-contents data)))
 
 (define (comment-file-contents file)
   (let ([data (xml-file->xexp file)])
@@ -275,7 +218,7 @@
       '()))
 
 (define (entry-file->scribble file)
-  (for ([item (entry-file-contents file)])
+  (let ([item (entry-file-contents-raw file)])
     (match-let
      ([(list item-id
              event-time
@@ -298,33 +241,13 @@
              subject
              body
              tag-list)
-       (list (lj-entry-item-id item)
-             (lj-entry-event-time item)
-             (lj-entry-url item)
-             (lj-entry-d-item-id item)
-             (lj-entry-event-timestmap item)
-             (lj-entry-reply-count item)
-             (lj-entry-log-time item)
-             (lj-entry-opt-preformatted item)
-             (lj-entry-personifi-tags item)
-             (lj-entry-has_screened item)
-             (lj-entry-comment-alter item)
-             (lj-entry-rev-time item)
-             (lj-entry-opt-backdated item)
-             (lj-entry-current-mood-id item)
-             (lj-entry-current-music item)
-             (lj-entry-rev-num item)
-             (lj-entry-can-comment item)
-             (lj-entry-a-num item)
-             (lj-entry-subject item)
-             (lj-entry-body item)
-             (lj-entry-tag-list item))])
+       item])
      (ln-fmt-curly "title" subject)
      (ln-fmt-curly "para" body)
      (ln-fmt-curly "para" tag-list))))
 
 (define (comment-file->scribble file)
-  (for ([item (comment-file-contents file)])
+  (for ([item (comment-file-contents-raw file)])
     (match-let
      ([(list id
              parent-id
@@ -332,12 +255,7 @@
              date
              subject
              body)
-       (list (lj-comment-id item)
-             (lj-comment-parent-id item)
-             (lj-comment-state item)
-             (lj-comment-date item)
-             (lj-comment-subject item)
-             (lj-comment-body item))])
+       item])
      (ln-fmt-curly "title" subject)
      (ln-fmt-curly "para" date)
      (ln-fmt-curly "para" body))))
@@ -364,7 +282,7 @@
     (for-each make-scribble-file
               (directory-list path))))
 
-;;; Top-level
+;;; Top-level calls
 (define (dispatch-input arg)
   (ln arg)
   (cond [(file-exists? arg) (make-scribble-file arg)]
@@ -380,3 +298,5 @@
   (command-line
    #:args args
    (main args)))
+
+;;; Disable use of structures?
