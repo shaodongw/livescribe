@@ -8,10 +8,6 @@ convert XML files created by
 categorized into either "entry", or "comment" data, the former
 referring to the posts created by the owner of the journal.
 
-At the moment, the Scribble writer is not yet written, and that what
-works at the moment is extraction of entry and comment data, returned
-as internal object representations of LiveJournal post information.
-
 # Installation
 
 Since Livescribe is not yet part of any of Racket's package systems,
