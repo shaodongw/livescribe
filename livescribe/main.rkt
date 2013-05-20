@@ -255,13 +255,16 @@
 (define (fmt-curly cmd str)
   (fmt cmd str #:open "{" #:close "}"))
 
+(define (ln-fmt-curly . rst)
+  (ln (apply fmt-curly rst)))
+
 (define (fmt-square cmd str)
   (fmt cmd str #:open "[" #:close "}"))
 
 (define (fmt-round cmd str)
   (fmt cmd str #:open "(" #:close ")"))
 
-;;; TODO: File stuff
+;;; File readers and writers
 (define (read-file file)
   (if (file-exists? file)
       (cond [(entry-file? file)
@@ -315,14 +318,10 @@
              (lj-entry-a-num item)
              (lj-entry-subject item)
              (lj-entry-body item)
-             (lj-entry-tag-list item))
-       ;; (map (λ (proc)
-       ;;        (proc item))
-       ;;      (make-procs 'lj-entry- (symbols->strings entry-content-fields)))
-       ])
-     (ln (fmt-curly "title" subject))
-     (ln (fmt-curly "para" body))
-     (ln (fmt-curly "para" tag-list)))))
+             (lj-entry-tag-list item))])
+     (ln-fmt-curly "title" subject)
+     (ln-fmt-curly "para" body)
+     (ln-fmt-curly "para" tag-list))))
 
 (define (comment-file->scribble file)
   (for ([item (comment-file-contents file)])
@@ -338,14 +337,10 @@
              (lj-comment-state item)
              (lj-comment-date item)
              (lj-comment-subject item)
-             (lj-comment-body item))
-       ;; (map (λ (proc)
-       ;;        (proc item))
-       ;;      (make-procs 'lj-comment- (symbols->strings comment-content-fields)))
-       ])
-     (ln (fmt-curly "title" subject))
-     (ln (fmt-curly "para" date))
-     (ln (fmt-curly "para" body)))))
+             (lj-comment-body item))])
+     (ln-fmt-curly "title" subject)
+     (ln-fmt-curly "para" date)
+     (ln-fmt-curly "para" body))))
 
 (define (xml-file->scribble file)
   (cond [(entry-file? file)
