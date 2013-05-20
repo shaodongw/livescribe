@@ -32,46 +32,77 @@
         (or/c (listof lj-entry?)
               (listof lj-comment?)))]))
 
-;; This is lame.
-(define entry-fields
-  '(subject
-    taglist
+(define entry-marker 'event)
+
+(define comment-marker 'comments)
+
+(define entry-metadata-fields-xml
+  '(itemid
     eventtime
     url
-    itemid
     ditemid
-    timestamp
-    replies
+    event_timestamp
+    reply_count
     logtime
-    body))
+    opt_preformatted
+    personifi_tags
+    hasscreened
+    commentalter
+    revtime
+    opt_backdated
+    current_moodid
+    current_music
+    revnum
+    can_comment
+    anum))
 
-(define comment-fields
+(define entry-content-fields-xml
   '(subject
-    date
-    id
+    event
+    taglist))
+
+(define comment-metadata-fields-xml
+  '(id
     parentid
     state
+    date))
+
+(define comment-content-fields-xml
+  '(subject
     body))
 
 (struct lj-entry
-  (subject
-   taglist
-   eventtime
-   url
-   itemid
-   ditemid
-   timestamp
-   replies
-   logtime
-   body))
+  (item-id                              ;itemid
+   event-time                           ;eventtime
+   url                                  ;url
+   d-item-id                            ;ditemid
+   event-timestmap                      ;event_timestamp
+   reply-count                          ;reply_count
+   log-time                             ;logtime
+   opt-preformatted                     ;opt_preformatted
+   personifi-tags                       ;personifi_tags
+   has_screened                         ;hasscreened
+   comment-alter                        ;commentalter
+   rev-time                             ;revtime
+   opt-backdated                        ;opt_backdated
+   current-mood-id                      ;current_moodid
+   current-music                        ;current_music
+   rev-num                              ;revnum
+   can-comment                          ;can_comment
+   a-num                                ;anum
+   subject                              ;subject
+   body                                 ;event
+   tag-list                             ;taglist
+   ))
 
 (struct lj-comment
-  (subject
-   date
-   id
-   parentid
-   state
-   body))
+  (id                                   ;id
+   parent-id                            ;parentid
+   state                                ;state
+   date                                 ;date
+   subject                              ;subject
+   body                                 ;body
+   ))
 
 (define (xml->xexp data)
   (xml->xexpr
@@ -106,104 +137,131 @@
     (cond [(null? value) (list '())]
           [else value])))
 
-(define (entry-metadata data)
+(define (collect-tag-values data tags)
   (map-append tag-value
-              (collect sxpath-value
-                       data
-                       '(subject
-                         taglist
-                         logtime
-                         eventtime
-                         url
-                         itemid
-                         ditemid
-                         event_timestamp
-                         reply_count))))
+              (collect sxpath-value data tags)))
+
+(define (merge-tag-values data tags)
+  (map (λ (tag)
+         (remove-newlines
+          (foldr string-append ""
+                 (rrest (first (sxpath-value tag data))))))
+       tags))
+
+(define (entry-metadata data)
+  (collect-tag-values data entry-metadata-fields-xml))
 
 (define (entry-body data)
-  (list (remove-newlines
-         (foldr string-append ""
-              (rrest (first (sxpath-value 'event data)))))))
+  (append-map (λ (tag)
+                (case tag
+                  [(subject taglist)
+                   (collect-tag-values data (list tag))]
+                  [else
+                   (merge-tag-values data (list tag))]))
+              entry-content-fields-xml))
+
+(define (entry-contents-raw data)
+  (append (entry-metadata data)
+          (entry-body data)))
 
 (define (entry-contents file)
   (let ([data (xml-file->xexp file)])
-    (match-let ([(list subject
-                       taglist
-                       logtime
-                       eventtime
-                       url
-                       itemid
-                       ditemid
-                       event_timestamp
-                       reply_count
-                       body)
-                 (append (entry-metadata data)
-                         (entry-body data))])
-      (list (lj-entry subject
-                      taglist
-                      logtime
-                      eventtime
-                      url
-                      itemid
-                      ditemid
-                      event_timestamp
-                      reply_count
-                      body)))))
+    (match-let
+     ([(list item-id
+             event-time
+             url
+             d-item-id
+             event-timestmap
+             reply-count
+             log-time
+             opt-preformatted
+             personifi-tags
+             has_screened
+             comment-alter
+             rev-time
+             opt-backdated
+             current-mood-id
+             current-music
+             rev-num
+             can-comment
+             a-num
+             subject
+             body
+             tag-list)
+       (entry-contents-raw data)])
+     (list (lj-entry item-id
+                     event-time
+                     url
+                     d-item-id
+                     event-timestmap
+                     reply-count
+                     log-time
+                     opt-preformatted
+                     personifi-tags
+                     has_screened
+                     comment-alter
+                     rev-time
+                     opt-backdated
+                     current-mood-id
+                     current-music
+                     rev-num
+                     can-comment
+                     a-num
+                     subject
+                     body
+                     tag-list)))))
 
 (define (comment-metadata data)
-  (map (λ (lst)
-         (map tag-value lst))
-       (collect sxpath-value
-                data
-                '(subject
-                  date
-                  id
-                  parentid
-                  state))))
+  (for/list ([items (collect sxpath-value data
+                             comment-metadata-fields-xml)])
+    (map tag-value items)))
 
 (define (comment-body data)
-  (map (λ (lst)
-         (map tag-value lst))
-       (collect sxpath-value data '(body))))
+  (for/list ([items (collect sxpath-value data
+                             comment-content-fields-xml)])
+    (map tag-value items)))
+
+(define (comment-contents-raw data)
+  (append (comment-metadata data)
+          (comment-body data)))
 
 (define (comment-contents file)
   (let ([data (xml-file->xexp file)])
-    (map (λ (x)
-           (match-let ([(list subject
-                              date
-                              id
+    (map (λ (fields)
+           (match-let ([(list id
                               parentid
                               state
+                              date
+                              subject
                               body)
-                        x])
-             (lj-comment subject
-                         date
-                         id
-                         parentid
-                         state
-                         body)))
+                        fields])
+                      (lj-comment id
+                                  parentid
+                                  state
+                                  date
+                                  subject
+                                  body)))
          (match-let ([(list a b c d e f)
-                      (append (comment-metadata data)
-                              (comment-body data))])
-           (for/list ([subject a]
-                      [date b]
-                      [id c]
-                      [parentid d]
-                      [state e]
+                      (comment-contents-raw data)])
+           (for/list ([id a]
+                      [parentid b]
+                      [state c]
+                      [date d]
+                      [subject e]
                       [body f])
              (append-map list
-                         (list subject
-                               date
-                               id
+                         (list id
                                parentid
                                state
+                               date
+                               subject
                                body)))))))
 
 (define (entry-xexp? xexp)
-  (eqv? (car xexp) 'event))
+  (eqv? (car xexp) entry-marker))
 
 (define (comment-xexp? xexp)
-  (eqv? (car xexp) 'comments))
+  (eqv? (car xexp) comment-marker))
 
 (define (entry-file? file)
   (entry-xexp? (xml-file->xexp file)))
@@ -217,7 +275,7 @@
              (entry-contents file)]
             [(comment-file? file)
              (comment-contents file)]
-            [else (format "foo!" file)])
+            [else (error 'read-file "blah")])
       '()))
 
 ;; Write these
