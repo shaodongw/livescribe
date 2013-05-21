@@ -66,7 +66,7 @@
     can_comment
     anum))
 
-(define entry-content-fields-xml
+(define entry-body-fields-xml
   '(subject
     event
     taglist))
@@ -77,7 +77,7 @@
     state
     date))
 
-(define comment-content-fields-xml
+(define comment-body-fields-xml
   '(subject
     body))
 
@@ -122,25 +122,23 @@
   (map-append tag-value
               (collect sxpath-value data tags)))
 
-(define (merge-tag-values data tags)
-  (map (λ (tag)
-         (remove-newlines
-          (foldr string-append ""
-                 (rrest (first (sxpath-value tag data))))))
-       tags))
-
 ;;; Entries
 (define (entry-metadata data)
   (collect-tag-values data entry-metadata-fields-xml))
 
 (define (entry-body data)
   (append-map (λ (tag)
-                (case tag
-                  [(subject taglist)
-                   (collect-tag-values data (list tag))]
-                  [else
-                   (merge-tag-values data (list tag))]))
-              entry-content-fields-xml))
+                (let ([ltag (list tag)])
+                  (case tag
+                    [(subject taglist)
+                     (collect-tag-values data ltag)]
+                    [(event)
+                     (map (λ (t)
+                            (remove-newlines
+                             (foldr string-append ""
+                                    (rrest (first (sxpath-value t data))))))
+                          ltag)])))
+              entry-body-fields-xml))
 
 (define (entry-data-contents data)
   (append (entry-metadata data)
@@ -157,9 +155,16 @@
     (map tag-value items)))
 
 (define (comment-body data)
-  (for/list ([items (collect sxpath-value data
-                             comment-content-fields-xml)])
-    (map tag-value items)))
+  (append-map (λ (tag)
+                (let ([ltag (list tag)])
+                  (case tag
+                    [(subject)
+                     (list (collect-tag-values data ltag))]
+                    [(body)
+                     (list (map (λ (x)
+                                  (foldr string-append "" (rrest x)))
+                                (sxpath-value tag data)))])))
+              comment-body-fields-xml))
 
 (define (comment-data-contents data)
   (collect-cars
