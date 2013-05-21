@@ -42,6 +42,8 @@
 
 (define scribble-suffix ".scrbl")
 
+(define scribble-header "#lang scribble/base")
+
 (define entry-marker 'event)
 
 (define comment-marker 'comments)
@@ -216,7 +218,7 @@
 
 ;;; File writers
 (define (display-scribble-header)
-  (ln "#lang scribble/base"))
+  (ln scribble-header))
 
 (define (entry-file->scribble file)
   (let ([item (entry-file-contents file)])
