@@ -33,18 +33,13 @@
   [xml-file->scribble
    (->* ((and/c (or/c string? path?) file-exists?)) ()
         any/c)]
-  [dispatch-input
-   (->* ((or/c file-exists? directory-exists?)) ()
-        any/c)]
   [make-scribble-file
    (->* (file-exists?) ()
-        any/c)]
-  [make-scribble-files
-   (->* (directory-exists?) ()
         any/c)]))
 
 ;;; Parameters
 (define current-verbosity (make-parameter 0))
+(define current-outfile (make-parameter #f))
 
 ;;; Global definitions
 (define program-name "livescribe")
@@ -287,34 +282,32 @@
          (comment-file->scribble file)]))
 
 (define (make-scribble-file path)
-  (let ([file (ensure-object-path path)])
-    (with-output-to-file (suffix->scrbl file)
-      #:exists 'truncate/replace
-      (λ ()
-        (format "~a" (xml-file->scribble file))))))
-
-(define (make-scribble-files path)
-  (let ([file-string (ensure-string-path path)])
-    (for-each make-scribble-file
-              (directory-list path))))
+  (let* ([file (ensure-object-path path)]
+         [sdata (xml-file->scribble file)])
+    (cond [(current-outfile)
+           (with-output-to-file (current-outfile)
+             #:exists 'truncate/replace
+             (λ ()
+               (format "~a" (xml-file->scribble sdata))))]
+          [else
+           (write sdata (current-output-port))])))
 
 ;;; Top-level calls
-(define (dispatch-input arg)
-  (prn1 arg)
-  (cond [(file-exists? arg) (make-scribble-file arg)]
-        [(directory-exists? arg) (make-scribble-files arg)]
-        [else #f]))
-
-(define (main args)
-  (for-each dispatch-input args))
+(define (main arg)
+  (make-scribble-file arg))
 
 (module+ main
   (command-line
    #:program program-name
    #:once-any
-   [("-v" "--verbose") "Compile with verbose messages."
+   [("-v" "--verbose")
+    "Compile with verbose messages."
     (current-verbosity 1)]
-   [("-V" "--very-verbose") "Compile with very verbose messages."
+   [("-V" "--very-verbose")
+    "Compile with very verbose messages."
     (current-verbosity 2)]
-   #:args files
-   (main files)))
+   [("-o" "--outfile") outfile
+    "Specify output file."
+    (current-outfile outfile)]
+   #:args (file)
+   (main file)))
