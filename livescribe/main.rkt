@@ -35,7 +35,16 @@
         any/c)]
   [dispatch-input
    (->* ((or/c file-exists? directory-exists?)) ()
+        any/c)]
+  [make-scribble-file
+   (->* (file-exists?) ()
+        any/c)]
+  [make-scribble-files
+   (->* (directory-exists?) ()
         any/c)]))
+
+;;; Parameters
+(define current-verbosity (make-parameter 0))
 
 ;;; Global definitions
 (define program-name "livescribe")
@@ -124,6 +133,16 @@
   (map-append tag-value
               (collect sxpath-value data tags)))
 
+;;; Shamelessly stolen from greghendershott's frog.rkt
+(define (prn level format . args)
+  (when (>= (current-verbosity) level)
+    (apply printf format args)
+    (newline)))
+
+(define (prn0 format . args) (apply prn 0 format args))
+(define (prn1 format . args) (apply prn 1 format args))
+(define (prn2 format . args) (apply prn 2 format args))
+
 ;;; Entries
 (define (entry-metadata data)
   (collect-tag-values data entry-metadata-fields-xml))
@@ -198,23 +217,13 @@
     (format (string-append "@" cmd dat open "~a" close)
             str)))
 
-(define (fmt-curly cmd str)
-  (fmt cmd str #:open "{" #:close "}"))
+(define (fmt-curly cmd str) (fmt cmd str #:open "{" #:close "}"))
+(define (fmt-square cmd str) (fmt cmd str #:open "[" #:close "}"))
+(define (fmt-round cmd str) (fmt cmd str #:open "(" #:close ")"))
 
-(define (fmt-square cmd str)
-  (fmt cmd str #:open "[" #:close "}"))
-
-(define (fmt-round cmd str)
-  (fmt cmd str #:open "(" #:close ")"))
-
-(define (ln-fmt-curly . rst)
-  (ln (apply fmt-curly rst)))
-
-(define (ln-fmt-square . rst)
-  (ln (apply fmt-square rst)))
-
-(define (ln-fmt-round . rst)
-  (ln (apply fmt-round rst)))
+(define (ln-fmt-curly . rst) (ln (apply fmt-curly rst)))
+(define (ln-fmt-square . rst) (ln (apply fmt-square rst)))
+(define (ln-fmt-round . rst) (ln (apply fmt-round rst)))
 
 ;;; File writers
 (define (display-scribble-header)
@@ -277,19 +286,19 @@
 
 (define (make-scribble-file path)
   (let ([file (ensure-object-path path)])
-    (when (path-exists? file)
-      (with-output-to-file (suffix->scrbl file)
-        #:exists 'truncate/replace
-        (λ ()
-          (write-scribble-file file))))))
+    (with-output-to-file (suffix->scrbl file)
+      #:exists 'truncate/replace
+      (λ ()
+        (write-scribble-file file)))))
 
 (define (make-scribble-files path)
-  (when (directory-exists? path)
+  (let ([file-string (ensure-string-path path)])
     (for-each make-scribble-file
               (directory-list path))))
 
 ;;; Top-level calls
 (define (dispatch-input arg)
+  (prn1 arg)
   (cond [(file-exists? arg) (make-scribble-file arg)]
         [(directory-exists? arg) (make-scribble-files arg)]
         [else #f]))
@@ -300,5 +309,10 @@
 (module+ main
   (command-line
    #:program program-name
+   #:once-any
+   [("-v" "--verbose") "Compile with verbose messages."
+    (current-verbosity 1)]
+   [("-V" "--very-verbose") "Compile with very verbose messages."
+    (current-verbosity 2)]
    #:args files
    (main files)))
