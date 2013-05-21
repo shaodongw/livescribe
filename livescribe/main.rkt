@@ -286,15 +286,12 @@
         [(comment-file? file)
          (comment-file->scribble file)]))
 
-(define (write-scribble-file file)
-  (write (xml-file->scribble file)))
-
 (define (make-scribble-file path)
   (let ([file (ensure-object-path path)])
     (with-output-to-file (suffix->scrbl file)
       #:exists 'truncate/replace
       (λ ()
-        (write-scribble-file file)))))
+        (format "~a" (xml-file->scribble file))))))
 
 (define (make-scribble-files path)
   (let ([file-string (ensure-string-path path)])
