@@ -96,6 +96,7 @@
     (read-xml data))))
 
 (define (xml-file->xexp file)
+  (ln "xml-file->xexp")
   (call-with-input-file file
     (λ (in)
       (xml->xexp in))))
@@ -282,15 +283,14 @@
          (comment-file->scribble file)]))
 
 (define (make-scribble-file path)
-  (let* ([file (ensure-object-path path)]
-         [sdata (xml-file->scribble file)])
+  (let ([file (ensure-object-path path)])
     (cond [(current-outfile)
            (with-output-to-file (current-outfile)
              #:exists 'truncate/replace
              (λ ()
-               (format "~a" (xml-file->scribble sdata))))]
+               (format "~a" (xml-file->scribble file))))]
           [else
-           (write sdata (current-output-port))])))
+           (format "~a" (xml-file->scribble file))])))
 
 ;;; Top-level calls
 (define (main arg)
