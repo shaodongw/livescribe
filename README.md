@@ -31,10 +31,6 @@ raco livescribe file.xml
 A corresponding `file.scrbl` will then be present in the same
 directory where `file.xml` is found.
 
-# Caveats
-
-0. The Scribble writer at the moment, is mostly rudimentary.
-
 # Todo
 
 0. Improve Scribble writer.
