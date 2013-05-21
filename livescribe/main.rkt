@@ -221,9 +221,14 @@
 (define (fmt-square cmd str) (fmt cmd str #:open "[" #:close "}"))
 (define (fmt-round cmd str) (fmt cmd str #:open "(" #:close ")"))
 
-(define (ln-fmt-curly . rst) (ln (apply fmt-curly rst)))
-(define (ln-fmt-square . rst) (ln (apply fmt-square rst)))
-(define (ln-fmt-round . rst) (ln (apply fmt-round rst)))
+(define (sfmt-title text)
+  (ln (fmt-curly "title" text)))
+
+(define (sfmt-para text)
+  (ln (fmt-curly "para" text)))
+
+(define (sfmt-section text)
+  (ln (fmt-curly "section" text)))
 
 ;;; File writers
 (define (display-scribble-header)
@@ -255,13 +260,13 @@
              body
              tag-list)
        item])
-     (ln-fmt-curly "title" subject)
-     (ln-fmt-curly "para" body)
-     (ln-fmt-curly "para" tag-list))))
+     (sfmt-title subject)
+     (sfmt-para body)
+     (sfmt-para tag-list))))
 
 (define (comment-file->scribble file)
   (display-scribble-header)
-  (ln-fmt-curly "title" "Comments")
+  (sfmt-title "Comments")
   (for ([item (comment-file-contents file)])
     (match-let
      ([(list id
@@ -271,9 +276,9 @@
              subject
              body)
        item])
-     (ln-fmt-curly "section" subject)
-     (ln-fmt-curly "para" date)
-     (ln-fmt-curly "para" body))))
+     (sfmt-section subject)
+     (sfmt-para date)
+     (sfmt-para body))))
 
 (define (xml-file->scribble file)
   (cond [(entry-file? file)
