@@ -42,7 +42,6 @@
 
 ;;; Parameters
 (define current-verbosity (make-parameter 0))
-(define current-outfile (make-parameter #f))
 
 ;;; Global definitions
 (define program-name "livescribe")
@@ -311,8 +310,5 @@
    [("-V" "--very-verbose")
     "Compile with very verbose messages."
     (current-verbosity 2)]
-   [("-o" "--outfile") outfile
-    "Specify output file."
-    (current-outfile outfile)]
    #:args args
    (main args)))
