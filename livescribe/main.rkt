@@ -316,5 +316,3 @@
     (current-outfile outfile)]
    #:args args
    (main args)))
-
-;; Examine how frog.rkt creates the .html files
