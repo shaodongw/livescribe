@@ -30,11 +30,14 @@
   [comment-file-contents
    (->* ((or/c string? path?)) ()
         any/c)]
-  [xml-file->scribble
+  [xml-file->scribble-data
    (->* ((and/c (or/c string? path?) file-exists?)) ()
         any/c)]
-  [make-scribble-file
-   (->* (file-exists?) ()
+  [xml-file->scribble-file
+   (->* ((and/c (or/c string? path?) file-exists?) string?) ()
+        any)]
+  [main
+   (->* ((list/c file-exists? string?)) ()
         any/c)]))
 
 ;;; Parameters
@@ -96,7 +99,6 @@
     (read-xml data))))
 
 (define (xml-file->xexp file)
-  (ln "xml-file->xexp")
   (call-with-input-file file
     (λ (in)
       (xml->xexp in))))
@@ -210,21 +212,17 @@
   (let ([dat (cond [(not (empty-string? datum))
                       (string-append "[" datum "]")]
                      [else ""])])
-    (format (string-append "@" cmd dat open "~a" close)
-            str)))
+    (printf "~a~n"
+            (format (string-append "@" cmd dat open "~a" close)
+                    str))))
 
 (define (fmt-curly cmd str) (fmt cmd str #:open "{" #:close "}"))
 (define (fmt-square cmd str) (fmt cmd str #:open "[" #:close "}"))
 (define (fmt-round cmd str) (fmt cmd str #:open "(" #:close ")"))
 
-(define (sfmt-title text)
-  (ln (fmt-curly "title" text)))
-
-(define (sfmt-para text)
-  (ln (fmt-curly "para" text)))
-
-(define (sfmt-section text)
-  (ln (fmt-curly "section" text)))
+(define (sfmt-title text) (fmt-curly "title" text))
+(define (sfmt-para text) (fmt-curly "para" text))
+(define (sfmt-section text) (fmt-curly "section" text))
 
 ;;; File writers
 (define (display-scribble-header)
@@ -276,25 +274,32 @@
      (sfmt-para date)
      (sfmt-para body))))
 
-(define (xml-file->scribble file)
+(define (xml-file->scribble-data file)
   (cond [(entry-file? file)
          (entry-file->scribble file)]
         [(comment-file? file)
          (comment-file->scribble file)]))
 
-(define (make-scribble-file path)
-  (let ([file (ensure-object-path path)])
-    (cond [(current-outfile)
-           (with-output-to-file (current-outfile)
-             #:exists 'truncate/replace
-             (λ ()
-               (format "~a" (xml-file->scribble file))))]
-          [else
-           (format "~a" (xml-file->scribble file))])))
+(define (xml-file->scribble-file infile outfile)
+  (let ([ifile (ensure-object-path infile)]
+        [ofile (ensure-object-path outfile)])
+    (with-output-to-file ofile
+      #:exists 'truncate/replace
+      (λ ()
+        (xml-file->scribble-data ifile)))))
+
+;;; TODO
+(define (xml-file->markdown-file infile outfile) '())
 
 ;;; Top-level calls
-(define (main arg)
-  (make-scribble-file arg))
+(define (main args)
+  (match-let
+   ([(list infile outfile) args])
+   (case (string->symbol (suffix outfile))
+     [(scrbl)
+      (xml-file->scribble-file infile outfile)]
+     [(md markdown text)
+      (xml-file->markdown-file infile outfile)])))
 
 (module+ main
   (command-line
@@ -309,5 +314,7 @@
    [("-o" "--outfile") outfile
     "Specify output file."
     (current-outfile outfile)]
-   #:args (file)
-   (main file)))
+   #:args args
+   (main args)))
+
+;; Examine how frog.rkt creates the .html files

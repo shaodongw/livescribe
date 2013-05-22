@@ -8,31 +8,42 @@ convert XML files created by
 categorized into either "entry", or "comment" data, the former
 referring to the posts created by the owner of the journal.
 
+
 # Installation
 
-Since Livescribe is not yet part of any of Racket's package systems,
-offline installation is the only working method now. To install, run:
+**Livescribe** is available via Racket's
+[new package system](http://pkg.racket-lang.org). To install it:
 
 ```
+raco pkg install livescribe
+```
+
+If that doesn't work, you may clone the GitHub repository, and install
+from local disk:
+
+```
+git clone http://github.com/ebzzry/livescribe.git
 raco pkg install livescribe/
 ```
 
-This command must be performed at the Git checkout level. The trailing
-slash is important to tell `raco` that you are installing from a local
-directory. Without it, it will try to fetch the Livescribe sources
+The trailing slash is important to tell `raco` that you are installing
+from a local directory. Without it, it will try to fetch the sources
 from the internet.
+
 
 # Usage
 
 ```
-raco livescribe file.xml
+raco livescribe file.xml file.scrbl
 ```
 
-A corresponding `file.scrbl` will then be present in the same
-directory where `file.xml` is found.
+This command creates a file named `file.scrbl` in the directory where
+`file.xml` is found.
+
 
 # Todo
 
+0. Output to both Scribble, and Markdown.
 0. Enable HTML inlining.
 0. Use tree system to create proper references to parent comments.
 0. Write Disqus comment writer.
