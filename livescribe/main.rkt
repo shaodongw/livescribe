@@ -6,6 +6,7 @@
  racket/string
  racket/cmdline
  racket/match
+ racket/file
  xml
  sxml
  "utils.rkt")
@@ -89,7 +90,14 @@
   '(subject
     body))
 
-(define ln displayln)
+(define sapp string-append)
+
+(define (dl0 . rst)
+  (displayln (apply sapp rst)))
+
+(define (dl . rst)
+  (displayln (apply sapp (add-between rst " ")))
+  (newline))
 
 ;;; Essentials
 (define (xml->xexp data)
@@ -153,7 +161,7 @@
                     [(event)
                      (map (λ (t)
                             (remove-newlines
-                             (foldr string-append ""
+                             (foldr sapp ""
                                     (rrest (first (sxpath-value t data))))))
                           ltag)])))
               entry-body-fields-xml))
@@ -180,7 +188,7 @@
                      (list (collect-tag-values data ltag))]
                     [(body)
                      (list (map (λ (x)
-                                  (foldr string-append "" (rrest x)))
+                                  (foldr sapp "" (rrest x)))
                                 (sxpath-value tag data)))])))
               comment-body-fields-xml))
 
@@ -207,35 +215,24 @@
   (comment-xexp? (xml-file->xexp file)))
 
 ;;; String formatters
-(define (fmt cmd str #:open open #:close close #:datum [datum ""])
-  (let ([dat (cond [(not (empty-string? datum))
-                      (string-append "[" datum "]")]
-                     [else ""])])
-    (printf "~a~n"
-            (format (string-append "@" cmd dat open "~a" close)
-                    str))))
-
-(define (fmt-curly cmd str) (fmt cmd str #:open "{" #:close "}"))
-(define (fmt-square cmd str) (fmt cmd str #:open "[" #:close "}"))
-(define (fmt-round cmd str) (fmt cmd str #:open "(" #:close ")"))
-
-(define (sfmt-title text) (fmt-curly "title" text))
-(define (sfmt-para text) (fmt-curly "para" text))
-(define (sfmt-section text) (fmt-curly "section" text))
+(define ($ cmd str [open "{"] [close "}"] [datum ""])
+  (let ([at "@"]
+        [dat (cond [(not (empty-string? datum))
+                    (sapp "[" datum "]")]
+                   [else ""])]
+        [scmd (symbol->string cmd)])
+    (sapp at scmd dat open str close)))
 
 ;;; File writers
-(define (display-scribble-header)
-  (ln scribble-header))
-
 (define (entry-file->scribble file)
   (let ([item (entry-file-contents file)])
-    (display-scribble-header)
+    (dl scribble-header)
     (match-let
      ([(list item-id
              event-time
              url
              d-item-id
-             event-timestmap
+             event-timestamp
              reply-count
              log-time
              opt-preformatted
@@ -253,13 +250,19 @@
              body
              tag-list)
        item])
-     (sfmt-title subject)
-     (sfmt-para body)
-     (sfmt-para tag-list))))
+     (dl ($ 'title subject))
+     (dl ($ 'bold "Subject:") subject)
+     (dl ($ 'bold "Event Time:") event-time)
+     (dl ($ 'bold "Event Timestamp:") event-timestamp)
+     (dl ($ 'bold "Current Mood:") current-mood-id)
+     (dl ($ 'bold "Current Music:") current-music)
+     (dl ($ 'bold "URL:") url)
+     (dl ($ 'bold "Tags:") tag-list)
+     (dl ($ 'para body)))))
 
 (define (comment-file->scribble file)
-  (display-scribble-header)
-  (sfmt-title "Comments")
+  (dl scribble-header)
+  (dl ($ 'title "Comments"))
   (for ([item (comment-file-contents file)])
     (match-let
      ([(list id
@@ -269,9 +272,12 @@
              subject
              body)
        item])
-     (sfmt-section subject)
-     (sfmt-para date)
-     (sfmt-para body))))
+     (dl ($ 'section subject))
+     (dl ($ 'bold "Subject:") subject)
+     (dl ($ 'bold "ID:") id)
+     (dl ($ 'bold "Parent ID:") parent-id)
+     (dl ($ 'bold "Date:") date)
+     (dl ($ 'para body)))))
 
 (define (xml-file->scribble-data file)
   (cond [(entry-file? file)
@@ -287,7 +293,9 @@
       (λ ()
         (xml-file->scribble-data ifile)))))
 
-;;; TODO
+;;; Todo
+(define (xml-file->markdown-data file) '())
+
 (define (xml-file->markdown-file infile outfile) '())
 
 ;;; Top-level calls
