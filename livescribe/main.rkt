@@ -223,10 +223,21 @@
         [scmd (symbol->string cmd)])
     (sapp at scmd dat open str close)))
 
+(define (display-scribble-header)
+  (dl scribble-header))
+
+(define (display-sutils-header)
+  (dl "@(require \"sutils.rkt\")"))
+
+(define (display-headers)
+  (display-scribble-header)
+  ;; (display-sutils-header)
+  )
+
 ;;; File writers
 (define (entry-file->scribble file)
   (let ([item (entry-file-contents file)])
-    (dl scribble-header)
+    (display-headers)
     (match-let
      ([(list item-id
              event-time
@@ -261,7 +272,7 @@
      (dl ($ 'para body)))))
 
 (define (comment-file->scribble file)
-  (dl scribble-header)
+  (display-headers)
   (dl ($ 'title "Comments"))
   (for ([item (comment-file-contents file)])
     (match-let
