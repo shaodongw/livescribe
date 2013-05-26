@@ -209,7 +209,7 @@
   (comment-xexp? (xml-file->xexp file)))
 
 ;;; String formatters
-(define ($ cmd str [open "{"] [close "}"] [datum ""])
+(define ($ cmd str [open "|{"] [close "}|"] [datum ""])
   (let ([at "@"]
         [dat (cond [(not (empty-string? datum))
                     (string-append "[" datum "]")]
@@ -267,6 +267,7 @@
      (dl ($ 'bold "Current Music:") current-music)
      (dl ($ 'bold "URL:") url)
      (dl ($ 'bold "Tags:") tag-list)
+     (dl ($ 'bold "Body:"))
      (dl ($ 'para body)))))
 
 (define (comment-file->scribble file)
@@ -286,6 +287,7 @@
      (dl ($ 'bold "ID:") id)
      (dl ($ 'bold "Parent ID:") parent-id)
      (dl ($ 'bold "Date:") date)
+     (dl ($ 'bold "Body:"))
      (dl ($ 'para body)))))
 
 (define (xml-file->scribble-data file)
