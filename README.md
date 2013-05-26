@@ -43,7 +43,6 @@ This command creates a file named `file.scrbl` in the directory where
 
 # Todo
 
-0. Fix entry body duplication bug.
 0. Enable HTML inlining.
 0. Output to both Scribble, and Markdown.
 0. Use tree system to create proper references to parent comments.
