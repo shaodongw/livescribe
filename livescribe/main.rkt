@@ -90,13 +90,11 @@
   '(subject
     body))
 
-(define sapp string-append)
-
 (define (dl0 . rst)
-  (displayln (apply sapp rst)))
+  (displayln (apply string-append rst)))
 
 (define (dl . rst)
-  (displayln (apply sapp (add-between rst " ")))
+  (displayln (apply string-append (add-between rst " ")))
   (newline))
 
 ;;; Essentials
@@ -154,16 +152,12 @@
 
 (define (entry-body data)
   (append-map (λ (tag)
-                (let ([ltag (list tag)])
-                  (case tag
-                    [(subject taglist)
-                     (collect-tag-values data ltag)]
-                    [(event)
-                     (map (λ (t)
-                            (remove-newlines
-                             (foldr sapp ""
-                                    (rrest (first (sxpath-value t data))))))
-                          ltag)])))
+                (case tag
+                  [(subject taglist)
+                   (collect-tag-values data (list tag))]
+                  [(event)
+                   (list (foldr string-append ""
+                                (rrest (first (sxpath-value tag data)))))]))
               entry-body-fields-xml))
 
 (define (entry-data-contents data)
@@ -188,7 +182,7 @@
                      (list (collect-tag-values data ltag))]
                     [(body)
                      (list (map (λ (x)
-                                  (foldr sapp "" (rrest x)))
+                                  (foldr string-append "" (rrest x)))
                                 (sxpath-value tag data)))])))
               comment-body-fields-xml))
 
@@ -218,16 +212,20 @@
 (define ($ cmd str [open "{"] [close "}"] [datum ""])
   (let ([at "@"]
         [dat (cond [(not (empty-string? datum))
-                    (sapp "[" datum "]")]
+                    (string-append "[" datum "]")]
                    [else ""])]
         [scmd (symbol->string cmd)])
-    (sapp at scmd dat open str close)))
+    (string-append at scmd dat open str close)))
 
+
+;;; Headers
 (define (display-scribble-header)
   (dl scribble-header))
 
 (define (display-sutils-header)
   (dl "@(require \"sutils.rkt\")"))
+
+(define (create-sutils-file) '())
 
 (define (display-headers)
   (display-scribble-header)
