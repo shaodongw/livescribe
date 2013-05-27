@@ -265,7 +265,7 @@
      (dl ($ 'bold "Event Timestamp:") event-timestamp)
      (dl ($ 'bold "Current Mood:") current-mood-id)
      (dl ($ 'bold "Current Music:") current-music)
-     (dl ($ 'bold "URL:") url)
+     (dl ($ 'bold "URL:") ($ 'url url))
      (dl ($ 'bold "Tags:") tag-list)
      (dl ($ 'bold "Body:"))
      (dl ($ 'para body)))))
