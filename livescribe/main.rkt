@@ -236,8 +236,8 @@
 (define (entry-file->scribble file)
   (let ([item (entry-file-contents file)])
     (display-headers)
-    (match-let
-     ([(list item-id
+    (match item
+      [(list item-id
              event-time
              url
              d-item-id
@@ -258,37 +258,35 @@
              subject
              body
              tag-list)
-       item])
-     (dl ($ 'title subject))
-     (dl ($ 'bold "Subject:") subject)
-     (dl ($ 'bold "Event Time:") event-time)
-     (dl ($ 'bold "Event Timestamp:") event-timestamp)
-     (dl ($ 'bold "Current Mood:") current-mood-id)
-     (dl ($ 'bold "Current Music:") current-music)
-     (dl ($ 'bold "URL:") ($ 'url url))
-     (dl ($ 'bold "Tags:") tag-list)
-     (dl ($ 'bold "Body:"))
-     (dl ($ 'para body)))))
+       (dl ($ 'title subject))
+       (dl ($ 'bold "Subject:") subject)
+       (dl ($ 'bold "Event Time:") event-time)
+       (dl ($ 'bold "Event Timestamp:") event-timestamp)
+       (dl ($ 'bold "Current Mood:") current-mood-id)
+       (dl ($ 'bold "Current Music:") current-music)
+       (dl ($ 'bold "URL:") ($ 'url url))
+       (dl ($ 'bold "Tags:") tag-list)
+       (dl ($ 'bold "Body:"))
+       (dl ($ 'para body))])))
 
 (define (comment-file->scribble file)
   (display-headers)
   (dl ($ 'title "Comments"))
   (for ([item (comment-file-contents file)])
-    (match-let
-     ([(list id
+    (match item
+      [(list id
              parent-id
              state
              date
              subject
              body)
-       item])
-     (dl ($ 'section subject))
-     (dl ($ 'bold "Subject:") subject)
-     (dl ($ 'bold "ID:") id)
-     (dl ($ 'bold "Parent ID:") parent-id)
-     (dl ($ 'bold "Date:") date)
-     (dl ($ 'bold "Body:"))
-     (dl ($ 'para body)))))
+       (dl ($ 'section subject))
+       (dl ($ 'bold "Subject:") subject)
+       (dl ($ 'bold "ID:") id)
+       (dl ($ 'bold "Parent ID:") parent-id)
+       (dl ($ 'bold "Date:") date)
+       (dl ($ 'bold "Body:"))
+       (dl ($ 'para body))]))) 
 
 (define (xml-file->scribble-data file)
   (cond [(entry-file? file)
@@ -311,13 +309,13 @@
 
 ;;; Top-level calls
 (define (main args)
-  (match-let
-   ([(list infile outfile) args])
-   (case (string->symbol (suffix outfile))
-     [(scrbl)
-      (xml-file->scribble-file infile outfile)]
-     [(md markdown text)
-      (xml-file->markdown-file infile outfile)])))
+  (match args
+    [(list infile outfile)
+     (case (string->symbol (suffix outfile))
+       [(scrbl)
+        (xml-file->scribble-file infile outfile)]
+       [(md markdown text)
+        (xml-file->markdown-file infile outfile)])]))
 
 (module+ main
   (command-line
