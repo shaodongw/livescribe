@@ -15,7 +15,7 @@ viewers, respectively.
 **Livescribe** is available via Racket's
 [Planet2](http://pkg.racket-lang.org).
 
-```shell
+```
 raco pkg install livescribe
 ```
 
@@ -25,7 +25,7 @@ from local disk.
 If that doesn't work, install the dependencies, and **Livescribe**
 itself, from the local disk.
 
-```shell
+```
 git clone http://github.com/jbclements/sxml.git
 git clone http://github.com/ebzzry/livescribe.git
 raco pkg install sxml/ livescribe/
@@ -40,7 +40,7 @@ from the internet.
 
 To convert the file named `file.xml` to `file.scrbl`:
 
-```shell
+```
 raco livescribe file.xml
 ```
 
@@ -48,13 +48,13 @@ To convert the file named `file.xml` to `file.scrbl`, and render
 `file.scrbl` as an HTML file named `file.html`, as if by running
 `scribble --html file.scrbl`.
 
-```shell
+```
 raco livescribe -r html file.xml
 ```
 
 To display the list of available command line options and switches.
 
-```shell
+```
 raco livescribe -h
 ```
 
@@ -62,12 +62,12 @@ To reduce typing, you may optionally create an alias to `raco
 livescribe` in your shell.
 
 Sh-like shells:
-```shell
+```
 echo 'alias livescribe="raco livescribe"' >> ~/.bashrc
 ```
 
 Csh-like shells:
-```shell
+```
 echo 'alias livescribe raco livescribe' >> ~/.cshrc
 ```
 
@@ -80,7 +80,7 @@ your shell.
 If you installed **Livescribe** using the first method described in the
 section *Introduction*, you can update it by running:
 
-```shell
+```
 raco pkg update livescribe
 ```
 
@@ -88,7 +88,7 @@ However, if you used the latter method, you may update it by pulling
 the GitHub updates, uninstalling **Livescribe*, then installing it
 again:
 
-```shell
+```
 cd livescribe
 git pull origin master
 cd ..
