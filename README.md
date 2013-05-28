@@ -54,8 +54,7 @@ raco livescribe -h
 ```
 
 To reduce typing, you may optionally create an alias to `raco
-livescribe` in your shell. Replace `.bashrc` and `.cshrc` in the
-examples below, with the appropriate init file for your shell.
+livescribe` in your shell.
 
 Sh-like shells:
 ```
@@ -67,6 +66,8 @@ Csh-like shells:
 echo 'alias livescribe raco livescribe' >> ~/.cshrc
 ```
 
+Replace `.bashrc`, and `.cshrc`, with the appropriate init file for
+your shell.
 
 # Updating
 
