@@ -34,17 +34,26 @@ from the internet.
 # Usage
 
 ```
-raco livescribe file.xml file.scrbl
+raco livescribe file.xml
 ```
 
 This command creates a file named `file.scrbl` in the directory where
 `file.xml` is found.
 
+```
+raco livescribe -r html file.xml
+```
+
+In addition to creating a file named `file.scrbl` as described above,
+it also creates a file named `file.html`, as if by running `scribble
+--html file.scrbl`. The list of available options to the `-r` switch
+are available by running `raco livescribe -h`.
+
 
 # Todo
 
 0. Enable HTML inlining.
-0. Output to both Scribble, and Markdown.
+0. Enable Frog markdown output
 0. Use tree system to create proper references to parent comments.
 0. Write Disqus comment writer.
 0. Create tests.

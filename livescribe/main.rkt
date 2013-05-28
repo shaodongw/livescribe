@@ -9,7 +9,13 @@
  racket/file
  xml
  sxml
- "utils.rkt")
+ "utils.rkt"
+ scribble/render
+ (prefix-in text:     scribble/text-render)
+ (prefix-in markdown: scribble/markdown-render)
+ (prefix-in html:     scribble/html-render)
+ (prefix-in latex:    scribble/latex-render)
+ (prefix-in pdf:      scribble/pdf-render))
 
 (provide
  (contract-out
@@ -43,8 +49,12 @@
 
 ;;; Parameters
 (define current-verbosity (make-parameter 0))
+(define current-render-type (make-parameter #f))
 
 ;;; Global definitions
+;; (define multi-html:render-mixin
+;;   (lambda (%) (html:render-multi-mixin (html:render-mixin %))))
+
 (define program-name "livescribe")
 
 (define scribble-suffix ".scrbl")
@@ -137,14 +147,14 @@
               (collect sxpath-value data tags)))
 
 ;;; Shamelessly stolen from greghendershott's frog.rkt
-(define (prn level format . args)
-  (when (>= (current-verbosity) level)
-    (apply printf format args)
+(define (prn lvl fmt . args)
+  (when (>= (current-verbosity) lvl)
+    (apply printf fmt args)
     (newline)))
 
-(define (prn0 format . args) (apply prn 0 format args))
-(define (prn1 format . args) (apply prn 1 format args))
-(define (prn2 format . args) (apply prn 2 format args))
+(define (prn0 fmt . args) (apply prn 0 fmt args))
+(define (prn1 fmt . args) (apply prn 1 fmt args))
+(define (prn2 fmt . args) (apply prn 2 fmt args))
 
 ;;; Entries
 (define (entry-metadata data)
@@ -258,7 +268,7 @@
              subject
              body
              tag-list)
-       (dl ($ 'title subject))
+       (dl ($ 'title item-id))
        (dl ($ 'bold "Subject:") subject)
        (dl ($ 'bold "Event Time:") event-time)
        (dl ($ 'bold "Event Timestamp:") event-timestamp)
@@ -286,7 +296,7 @@
        (dl ($ 'bold "Parent ID:") parent-id)
        (dl ($ 'bold "Date:") date)
        (dl ($ 'bold "Body:"))
-       (dl ($ 'para body))]))) 
+       (dl ($ 'para body))])))
 
 (define (xml-file->scribble-data file)
   (cond [(entry-file? file)
@@ -295,6 +305,7 @@
          (comment-file->scribble file)]))
 
 (define (xml-file->scribble-file infile outfile)
+  (prn1 "Converting ~a to ~a." infile outfile)
   (let ([ifile (ensure-object-path infile)]
         [ofile (ensure-object-path outfile)])
     (with-output-to-file ofile
@@ -302,20 +313,56 @@
       (λ ()
         (xml-file->scribble-data ifile)))))
 
-;;; Todo
-(define (xml-file->markdown-data file) '())
+;;; Render
+(define (build-listof-parts files)
+  (map (λ (file)
+         (dynamic-require `(file ,file) 'doc))
+       files))
 
-(define (xml-file->markdown-file infile outfile) '())
+(define (build-listof-dests files suffix)
+  (map (λ (file)
+         (path-replace-suffix file suffix))
+       files))
 
-;;; Top-level calls
-(define (main args)
-  (match args
-    [(list infile outfile)
-     (case (string->symbol (suffix outfile))
-       [(scrbl)
-        (xml-file->scribble-file infile outfile)]
-       [(md markdown text)
-        (xml-file->markdown-file infile outfile)])]))
+(define (render-file type file)
+  (let* ([files (map ensure-string-path (list file))]
+         [parts (build-listof-parts files)])
+  (case (string->symbol type)
+    [(markdown md)
+     (prn1 "Rendering ~a as Markdown." file)
+     (render parts (build-listof-dests files ".md")
+             #:render-mixin markdown:render-mixin)]
+    [(text txt)
+     (prn1 "Rendering ~a as Plaintext." file)
+     (render parts (build-listof-dests files ".txt")
+             #:render-mixin text:render-mixin)]
+    [(html)
+     (prn1 "Rendering ~a as single HTML file." file)
+     (render parts (build-listof-dests files ".html")
+             #:render-mixin html:render-mixin)]
+    ;; [(htmls)
+    ;;  (prn1 "Rendering ~a as multiple HTML files." file)
+    ;;  (render parts (build-listof-dests files ".html")
+    ;;          #:render-mixin multi-html:render-mixin)]
+    [(latex)
+     (prn1 "Rendering ~a as LaTeX." file)
+     (render parts (build-listof-dests files ".tex")
+             #:render-mixin latex:render-mixin)]
+    [(pdf)
+     (prn1 "Rendering ~a as PDF." file)
+     (render parts (build-listof-dests files ".pdf")
+             #:render-mixin pdf:render-mixin)]
+    [else (error 'render-file "Unknown render type: ~a" type)])))
+
+;;; Top-level
+(define (main files)
+  (for ([file files])
+    (let ([dest-file (suffix->scrbl file)]
+          [render-type (current-render-type)])
+      (xml-file->scribble-file file dest-file)
+      (when (and (file-exists? dest-file)
+                 render-type)
+        (render-file render-type dest-file)))))
 
 (module+ main
   (command-line
@@ -323,9 +370,17 @@
    #:once-any
    [("-v" "--verbose")
     "Compile with verbose messages."
-    (current-verbosity 1)]
+    (current-verbosity 1)
+    (prn1 "Verbose output enabled.")]
    [("-V" "--very-verbose")
     "Compile with very verbose messages."
-    (current-verbosity 2)]
-   #:args args
-   (main args)))
+    (current-verbosity 2)
+    (prn2 "Very verbose output enabled.")]
+   #:once-each
+   [("-r" "--render") type
+    ("Render Scribble file as <type>,"
+     "where <type> is [markdown|md|text|txt|html|htm|text|pdf]")
+    (current-render-type type)]
+   #:args (file . another-file)
+   (let ([files (cons file another-file)])
+     (main files))))
