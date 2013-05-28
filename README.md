@@ -28,9 +28,9 @@ git clone http://github.com/ebzzry/livescribe.git
 raco pkg install sxml/ livescribe/
 ```
 
-The trailing slash is important to tell `raco` that you are installing
-from local directories. Without it, it will try to fetch the sources
-from the internet.
+The trailing slashes are important, to tell `raco` that you are
+installing from local directories. Without it, it will try to fetch
+the sources from the internet.
 
 
 # Usage
