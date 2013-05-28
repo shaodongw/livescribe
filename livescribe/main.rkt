@@ -379,7 +379,7 @@
    #:once-each
    [("-r" "--render") type
     ("Render Scribble file as <type>,"
-     "where <type> is [markdown|md|text|txt|html|htm|text|pdf]")
+     "where <type> is [markdown|md|text|txt|html|text|pdf]")
     (current-render-type type)]
    #:args (file . another-file)
    (let ([files (cons file another-file)])
