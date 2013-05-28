@@ -22,13 +22,17 @@ raco pkg install livescribe
 If that doesn't work, you may clone the GitHub repository, and install
 from local disk.
 
+If that doesn't work, install the dependencies, and **Livescribe**
+itself, from the local disk.
+
 ```
+git clone http://github.com/jbclements/sxml.git
 git clone http://github.com/ebzzry/livescribe.git
-raco pkg install livescribe/
+raco pkg install sxml/ livescribe/
 ```
 
 The trailing slash is important to tell `raco` that you are installing
-from a local directory. Without it, it will try to fetch the sources
+from local directories. Without it, it will try to fetch the sources
 from the internet.
 
 
