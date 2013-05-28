@@ -44,12 +44,20 @@ To convert the file named `file.xml` to `file.scrbl`:
 raco livescribe file.xml
 ```
 
-To convert the file named `file.xml` to `file.scrbl`, then render it
-to `file.html`, as if by running `scribble --html file.scrbl`.
+Like above, but in addition to generating `file.scrbl`, render it to
+`file.html`, as if by running `scribble --html file.scrbl`.
 
 ```
 raco livescribe --html file.xml
 ```
+
+Again, like above, but in addition to generating `file.scrbl`, render
+it to `file.md`, as if by running `scribble --markdown file.scrbl`.
+
+```
+raco livescribe --markdown file.xml
+```
+
 
 To display the list of available command line options and switches.
 
