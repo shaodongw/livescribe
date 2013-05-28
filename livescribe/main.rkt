@@ -243,7 +243,7 @@
   )
 
 ;;; File writers
-(define (entry-file->scribble file)
+(define (entry-file->scribble-data file)
   (let ([item (entry-file-contents file)])
     (display-headers)
     (match item
@@ -269,7 +269,7 @@
              body
              tag-list)
        (dl ($ 'title item-id))
-       (dl ($ 'bold "Subject:") subject)
+       ;; (dl ($ 'bold "Subject:") subject)
        (dl ($ 'bold "Event Time:") event-time)
        (dl ($ 'bold "Event Timestamp:") event-timestamp)
        (dl ($ 'bold "Current Mood:") current-mood-id)
@@ -279,7 +279,7 @@
        (dl ($ 'bold "Body:"))
        (dl ($ 'para body))])))
 
-(define (comment-file->scribble file)
+(define (comment-file->scribble-data file)
   (display-headers)
   (dl ($ 'title "Comments"))
   (for ([item (comment-file-contents file)])
@@ -300,9 +300,9 @@
 
 (define (xml-file->scribble-data file)
   (cond [(entry-file? file)
-         (entry-file->scribble file)]
+         (entry-file->scribble-data file)]
         [(comment-file? file)
-         (comment-file->scribble file)]))
+         (comment-file->scribble-data file)]))
 
 (define (xml-file->scribble-file infile outfile)
   (prn1 "Converting ~a to ~a." infile outfile)
