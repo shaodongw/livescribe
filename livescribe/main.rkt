@@ -12,8 +12,6 @@
  "utils.rkt"
  "symbols.rkt"
  scribble/render
- scribble/html-properties
- scriblib/render-cond
  (prefix-in text:     scribble/text-render)
  (prefix-in markdown: scribble/markdown-render)
  (prefix-in html:     scribble/html-render)
@@ -55,9 +53,6 @@
 (define current-render-type (make-parameter #f))
 
 ;;; Global definitions
-;; (define multi-html:render-mixin
-;;   (lambda (%) (html:render-multi-mixin (html:render-mixin %))))
-
 (define program-name "livescribe")
 
 (define scribble-suffix ".scrbl")
@@ -151,7 +146,8 @@
 
 ;;; Bruce-force hacks to replace the &...; symbols in the HTML files
 ;;; because I don't know how to inject arbitrary literal HTML code
-;;; for the HTML output
+;;; for the HTML output. See notes in procedure
+;;; `entry-file->scribble-data`
 (define (replace-symbols str table)
   (let loop ([keys (hash-keys table)]
              [acc str])
@@ -262,15 +258,10 @@
 (define (display-scribble-header)
   (dl scribble-header))
 
-(define (display-sutils-header)
-  (dl "@(require \"sutils.rkt\")"))
-
 (define (create-sutils-file) '())
 
 (define (display-headers)
-  (display-scribble-header)
-  ;; (display-sutils-header)
-  )
+  (display-scribble-header))
 
 ;;; File writers
 (define (entry-file->scribble-data file)
@@ -311,6 +302,7 @@
        (dl ($ 'bold "URL:") ($ 'url url))
        (dl ($ 'bold "Tags:") tag-list)
        (dl ($ 'bold "Body:"))
+
        ;; NOTE:
        ;; The following expression quite well with the Markdown
        ;; output, only. But for the rest, the HTML tags are inserted.
@@ -319,6 +311,13 @@
        ;; What we need to have is the ability to insert the HTML
        ;; content here, as is. That is, we don't want the "<" symbols
        ;; to be translated to "&lt;".
+       ;;
+       ;; UPDATE:
+       ;; The ideal solution is to use something like the one described in
+       ;; http://goo.gl/iQLj5. Unfortunately, I don't know how to apply
+       ;; it outside Javascript. So what we're doing now is we replace
+       ;; all the &...; symbols found in the HTML document, as listed in
+       ;; ./symbols.rkt
        (dl ($ 'para body))])))
 
 (define (comment-file->scribble-data file)
@@ -383,10 +382,6 @@
      (prn1 "Rendering ~a as single HTML file." file)
      (render parts (build-listof-dests files ".html")
              #:render-mixin html:render-mixin)]
-    ;; [(htmls)
-    ;;  (prn1 "Rendering ~a as multiple HTML files." file)
-    ;;  (render parts (build-listof-dests files ".html")
-    ;;          #:render-mixin multi-html:render-mixin)]
     [(latex)
      (prn1 "Rendering ~a as LaTeX." file)
      (render parts (build-listof-dests files ".tex")
