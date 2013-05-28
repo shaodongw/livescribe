@@ -69,6 +69,7 @@ echo 'alias livescribe raco livescribe' >> ~/.cshrc
 Replace `.bashrc`, and `.cshrc`, with the appropriate init file for
 your shell.
 
+
 # Updating
 
 If you installed **Livescribe** using the first method described in the
