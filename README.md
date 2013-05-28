@@ -47,7 +47,11 @@ raco livescribe -r html file.xml
 In addition to creating a file named `file.scrbl` as described above,
 it also creates a file named `file.html`, as if by running `scribble
 --html file.scrbl`. The list of available options to the `-r` switch
-are available by running `raco livescribe -h`.
+are available by running:
+
+```
+raco livescribe -h
+```
 
 To reduce typing, you may optionally create an alias to `raco
 livescribe` in your shell. Replace `.bashrc` and `.cshrc` in the
