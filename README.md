@@ -68,6 +68,27 @@ echo 'alias livescribe raco livescribe' >> ~/.cshrc
 ```
 
 
+# Updating
+
+If you installed **Livescribe* using the first method described in the
+section *Introduction*, you can update it by running:
+
+```
+raco pkg update livescribe
+```
+
+However, if you used the latter method, you may update it by pulling
+the GitHub updates, uninstalling **Livescribe*, then installing it
+again:
+
+```
+cd livescribe
+git pull origin master
+cd ..
+raco pkg remove livescribe
+raco pkg install livescribe/
+```
+
 # Todo
 
 0. Enable HTML inlining.
