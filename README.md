@@ -49,7 +49,7 @@ To convert the file named `file.xml` to `file.scrbl`, and render
 `scribble --html file.scrbl`.
 
 ```
-raco livescribe -r html file.xml
+raco livescribe --html file.xml
 ```
 
 To display the list of available command line options and switches.
