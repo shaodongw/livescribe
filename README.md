@@ -74,7 +74,7 @@ raco pkg update livescribe
 ```
 
 However, if you used the latter method, you may update it by pulling
-the GitHub updates, uninstalling **Livescribe*, then installing it
+the updates, uninstalling **Livescribe**, then installing it
 again:
 
 ```
