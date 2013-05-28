@@ -42,14 +42,15 @@ raco livescribe file.xml
 ```
 
 Like above, but in addition to generating `file.scrbl`, render it to
-`file.html`, as if by running `scribble --html file.scrbl`.
+`file.html` as well, as if by running `scribble --html file.scrbl`.
 
 ```
 raco livescribe --html file.xml
 ```
 
 Again, like above, but in addition to generating `file.scrbl`, render
-it to `file.md`, as if by running `scribble --markdown file.scrbl`.
+it to `file.md` as well, as if by running `scribble --markdown
+file.scrbl`.
 
 ```
 raco livescribe --markdown file.xml
