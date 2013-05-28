@@ -12,7 +12,7 @@ referring to the posts created by the owner of the journal.
 # Installation
 
 **Livescribe** is available via Racket's
-[new package system](http://pkg.racket-lang.org). To install it:
+[new package system](http://pkg.racket-lang.org).
 
 ```
 raco pkg install livescribe
@@ -33,21 +33,21 @@ from the internet.
 
 # Usage
 
+To convert the file named `file.xml` to `file.scrbl`:
+
 ```
 raco livescribe file.xml
 ```
 
-This command creates a file named `file.scrbl` in the directory where
-`file.xml` is found.
+To convert the file named `file.xml` to `file.scrbl`, and render
+`file.scrbl` as an HTML file named `file.html`, as if by running
+`scribble --html file.scrbl`:
 
 ```
 raco livescribe -r html file.xml
 ```
 
-In addition to creating a file named `file.scrbl` as described above,
-it also creates a file named `file.html`, as if by running `scribble
---html file.scrbl`. The list of available options to the `-r` switch
-are available by running:
+To display the list of available command line options and switches:
 
 ```
 raco livescribe -h
