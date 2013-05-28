@@ -10,7 +10,10 @@
  xml
  sxml
  "utils.rkt"
+ "symbols.rkt"
  scribble/render
+ scribble/html-properties
+ scriblib/render-cond
  (prefix-in text:     scribble/text-render)
  (prefix-in markdown: scribble/markdown-render)
  (prefix-in html:     scribble/html-render)
@@ -146,7 +149,34 @@
   (map-append tag-value
               (collect sxpath-value data tags)))
 
-;;; Shamelessly stolen from greghendershott's frog.rkt
+;;; Bruce-force hacks to replace the &...; symbols in the HTML files
+;;; because I don't know how to inject arbitrary literal HTML code
+;;; for the HTML output
+(define (replace-symbols str table)
+  (let loop ([keys (hash-keys table)]
+             [acc str])
+    (cond [(null? keys) acc]
+          [else (loop (cdr keys)
+                      (string-replace
+                       acc
+                       (car keys)
+                       (char->string (hash-ref table (car keys)))))])))
+
+(define (replace-symbols-file file table)
+  (let ([data (replace-symbols (file->string file) table)])
+    (with-output-to-file file
+      #:exists 'truncate/replace
+      (λ ()
+        (display data)))))
+
+(define (post-process file)
+  (case (current-render-type)
+    [(html) (replace-symbols-file
+             (path-replace-suffix file ".html")
+             symbol-table)]
+    [else (void)]))
+
+;;; A neat debugging procedure shamelessly stolen from greghendershott/frog
 (define (prn lvl fmt . args)
   (when (>= (current-verbosity) lvl)
     (apply printf fmt args)
@@ -219,7 +249,7 @@
   (comment-xexp? (xml-file->xexp file)))
 
 ;;; String formatters
-(define ($ cmd str [open "|{"] [close "}|"] [datum ""])
+(define ($ cmd str [datum ""] [open "|{"] [close "}|"])
   (let ([at "@"]
         [dat (cond [(not (empty-string? datum))
                     (string-append "[" datum "]")]
@@ -281,6 +311,14 @@
        (dl ($ 'bold "URL:") ($ 'url url))
        (dl ($ 'bold "Tags:") tag-list)
        (dl ($ 'bold "Body:"))
+       ;; NOTE:
+       ;; The following expression quite well with the Markdown
+       ;; output, only. But for the rest, the HTML tags are inserted.
+       ;; This is understable for the PDF and LaTeX output since they
+       ;; has no intrinsic knowldege of HTML.
+       ;; What we need to have is the ability to insert the HTML
+       ;; content here, as is. That is, we don't want the "<" symbols
+       ;; to be translated to "&lt;".
        (dl ($ 'para body))])))
 
 (define (comment-file->scribble-data file)
@@ -332,7 +370,7 @@
 (define (render-file type file)
   (let* ([files (map ensure-string-path (list file))]
          [parts (build-listof-parts files)])
-  (case (string->symbol type)
+  (case type
     [(markdown md)
      (prn1 "Rendering ~a as Markdown." file)
      (render parts (build-listof-dests files ".md")
@@ -362,12 +400,13 @@
 ;;; Top-level
 (define (main files)
   (for ([file files])
-    (let ([dest-file (suffix->scrbl file)]
+    (let ([scrbl-file (suffix->scrbl file)]
           [render-type (current-render-type)])
-      (xml-file->scribble-file file dest-file)
-      (when (and (file-exists? dest-file)
+      (xml-file->scribble-file file scrbl-file)
+      (when (and (file-exists? scrbl-file)
                  render-type)
-        (render-file render-type dest-file)))))
+        (render-file render-type scrbl-file))
+      (post-process file))))
 
 (module+ main
   (command-line
@@ -385,7 +424,22 @@
    [("-r" "--render") type
     ("Render Scribble file as <type>,"
      "where <type> is [markdown|md|text|txt|html|text|pdf]")
-    (current-render-type type)]
+    (current-render-type (string->symbol type))]
+   [("--html")
+    "Use HTML as render type."
+    (current-render-type 'html)]
+   [("--markdown")
+    "Use Markdown as render type."
+    (current-render-type 'markdown)]
+   [("--text")
+    "Use Plaintext as render type."
+    (current-render-type 'text)]
+   [("--latex")
+    "Use LaTeX as render type."
+    (current-render-type 'latex)]
+   [("--pdf")
+    "Use PDF as render type."
+    (current-render-type 'pdf)]
    #:args (file . another-file)
    (let ([files (cons file another-file)])
      (main files))))
