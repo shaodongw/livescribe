@@ -96,7 +96,8 @@ raco pkg install livescribe/
 # Todo
 
 0. Enable HTML inlining.
-0. Enable Frog markdown output
+0. Enable Frog markdown output.
+0. Enable multi-HTML output.
 0. Use tree system to create proper references to parent comments.
 0. Write Disqus comment writer.
 0. Create tests.
