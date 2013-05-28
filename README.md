@@ -5,21 +5,22 @@ convert XML files created by
 [ljdump](https://github.com/ghewgill/ljdump), or
 [ljmigrate](https://github.com/ceejbot/ljmigrate), to
 [Scribble](http://docs.racket-lang.org/scribble/). Input files are
-categorized into either "entry", or "comment" data, the former
-referring to the posts created by the owner of the journal.
+categorized as either "entry", or "comment" data, referring to the
+posts created by the owner of the journal, and comments by journal
+viewers, respectively.
 
 
 # Installation
 
 **Livescribe** is available via Racket's
-[new package system](http://pkg.racket-lang.org).
+[Planet2](http://pkg.racket-lang.org).
 
 ```
 raco pkg install livescribe
 ```
 
 If that doesn't work, you may clone the GitHub repository, and install
-from local disk:
+from local disk.
 
 ```
 git clone http://github.com/ebzzry/livescribe.git
@@ -41,13 +42,13 @@ raco livescribe file.xml
 
 To convert the file named `file.xml` to `file.scrbl`, and render
 `file.scrbl` as an HTML file named `file.html`, as if by running
-`scribble --html file.scrbl`:
+`scribble --html file.scrbl`.
 
 ```
 raco livescribe -r html file.xml
 ```
 
-To display the list of available command line options and switches:
+To display the list of available command line options and switches.
 
 ```
 raco livescribe -h
