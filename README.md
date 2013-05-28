@@ -70,7 +70,7 @@ echo 'alias livescribe raco livescribe' >> ~/.cshrc
 
 # Updating
 
-If you installed **Livescribe* using the first method described in the
+If you installed **Livescribe** using the first method described in the
 section *Introduction*, you can update it by running:
 
 ```
