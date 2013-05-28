@@ -44,9 +44,8 @@ To convert the file named `file.xml` to `file.scrbl`:
 raco livescribe file.xml
 ```
 
-To convert the file named `file.xml` to `file.scrbl`, and render
-`file.scrbl` as an HTML file named `file.html`, as if by running
-`scribble --html file.scrbl`.
+To convert the file named `file.xml` to `file.scrbl`, then render it
+to `file.html`, as if by running `scribble --html file.scrbl`.
 
 ```
 raco livescribe --html file.xml
