@@ -49,6 +49,20 @@ it also creates a file named `file.html`, as if by running `scribble
 --html file.scrbl`. The list of available options to the `-r` switch
 are available by running `raco livescribe -h`.
 
+To reduce typing, you may optionally create an alias to `raco
+livescribe` in your shell. Replace `.bashrc` and `.cshrc` in the
+examples below, with the appropriate init file for your shell.
+
+Sh-like shells:
+```
+echo 'alias livescribe="raco livescribe"' >> ~/.bashrc
+```
+
+Csh-like shells:
+```
+echo 'alias livescribe raco livescribe' >> ~/.cshrc
+```
+
 
 # Todo
 
