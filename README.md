@@ -19,9 +19,6 @@ viewers, respectively.
 raco pkg install livescribe
 ```
 
-If that doesn't work, you may clone the GitHub repository, and install
-from local disk.
-
 If that doesn't work, install the dependencies, and **Livescribe**
 itself, from the local disk.
 
