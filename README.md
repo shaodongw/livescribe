@@ -57,22 +57,6 @@ To display the list of available command line options and switches.
 raco livescribe -h
 ```
 
-To reduce typing, you may optionally create an alias to `raco
-livescribe` in your shell.
-
-Sh-like shells:
-```
-echo 'alias livescribe="raco livescribe"' >> ~/.bashrc
-```
-
-Csh-like shells:
-```
-echo 'alias livescribe raco livescribe' >> ~/.cshrc
-```
-
-Replace `.bashrc`, and `.cshrc`, with the appropriate init file for
-your shell.
-
 
 # Updating
 
@@ -94,6 +78,25 @@ cd ..
 raco pkg remove livescribe
 raco pkg install livescribe/
 ```
+
+
+# Miscellany
+
+To reduce typing, you may optionally create an alias to `raco
+livescribe` in your shell.
+
+Sh-like shells:
+```
+echo 'alias livescribe="raco livescribe"' >> ~/.bashrc
+```
+
+Csh-like shells:
+```
+echo 'alias livescribe raco livescribe' >> ~/.cshrc
+```
+
+Replace `.bashrc`, and `.cshrc`, with the appropriate init file for
+your shell.
 
 
 # Todo
