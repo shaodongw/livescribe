@@ -1,14 +1,13 @@
 # Introduction
 
 __Livescribe__ is a [Racket](http://racket-lang.org) program, used to
-convert XML files created by
+convert the XML files created by
 [ljdump](https://github.com/ghewgill/ljdump), or
 [ljmigrate](https://github.com/ceejbot/ljmigrate), to
 [Scribble](http://docs.racket-lang.org/scribble/), and the output
-formats that Scribble supports. Input files are
-categorized as either *entry*, or *comment* data, referring to the
-posts created by the owner of the journal, and comments by journal
-viewers, respectively.
+formats that Scribble supports. Input files are categorized as either
+*entry*, or *comment* data, referring to the posts created by the
+owner of the journal, and comments by journal viewers, respectively.
 
 
 # Installation
