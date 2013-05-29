@@ -1,6 +1,6 @@
 # Introduction
 
-**Livescribe** is a [Racket](http://racket-lang.org) program, used to
+__Livescribe__ is a [Racket](http://racket-lang.org) program, used to
 convert XML files created by
 [ljdump](https://github.com/ghewgill/ljdump), or
 [ljmigrate](https://github.com/ceejbot/ljmigrate), to
@@ -13,14 +13,14 @@ viewers, respectively.
 
 # Installation
 
-**Livescribe** is available via Racket's
+__Livescribe__ is available via Racket's
 [Planet2](http://pkg.racket-lang.org).
 
 ```
 raco pkg install livescribe
 ```
 
-If that doesn't work, install the dependencies, and **Livescribe**
+If that doesn't work, install the dependencies, and __Livescribe__
 itself, from the local disk.
 
 ```
@@ -67,7 +67,7 @@ raco livescribe -h
 
 # Updating
 
-If you installed **Livescribe** using the first method described in the
+If you installed __Livescribe__ using the first method described in the
 section *Introduction*, you can update it by running:
 
 ```
@@ -75,7 +75,7 @@ raco pkg update livescribe
 ```
 
 However, if you used the latter method, you may update it by pulling
-the updates, uninstalling **Livescribe**, then installing it
+the updates, uninstalling __Livescribe__, then installing it
 again:
 
 ```
