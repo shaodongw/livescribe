@@ -406,35 +406,43 @@
 (module+ main
   (command-line
    #:program program-name
+   #:once-each
+   ;; [("-r" "--render") type
+   ;;  (""
+   ;;   "Render Scribble file as <type>,"
+   ;;   "where <type> is [markdown|md|text|txt|html|text|pdf]")
+   ;;  (current-render-type (string->symbol type))]
+   [("--html")
+    (""
+     "Render HTML files.")
+    (current-render-type 'html)]
+   [("--markdown")
+    (""
+     "Render Markdown files.")
+    (current-render-type 'markdown)]
+   [("--text")
+    (""
+    "Render Text files.")
+    (current-render-type 'text)]
+   [("--latex")
+    (""
+    "Render LaTeX files.")
+    (current-render-type 'latex)]
+   [("--pdf")
+    (""
+    "Render PDF files.")
+    (current-render-type 'pdf)]
    #:once-any
    [("-v" "--verbose")
-    "Compile with verbose messages."
+    (""
+     "Compile with verbose messages.")
     (current-verbosity 1)
     (prn1 "Verbose output enabled.")]
    [("-V" "--very-verbose")
-    "Compile with very verbose messages."
+    (""
+     "Compile with very verbose messages.")
     (current-verbosity 2)
     (prn2 "Very verbose output enabled.")]
-   #:once-each
-   [("-r" "--render") type
-    ("Render Scribble file as <type>,"
-     "where <type> is [markdown|md|text|txt|html|text|pdf]")
-    (current-render-type (string->symbol type))]
-   [("--html")
-    "Use HTML as render type."
-    (current-render-type 'html)]
-   [("--markdown")
-    "Use Markdown as render type."
-    (current-render-type 'markdown)]
-   [("--text")
-    "Use Plaintext as render type."
-    (current-render-type 'text)]
-   [("--latex")
-    "Use LaTeX as render type."
-    (current-render-type 'latex)]
-   [("--pdf")
-    "Use PDF as render type."
-    (current-render-type 'pdf)]
    #:args (file . another-file)
    (let ([files (cons file another-file)])
      (main files))))
